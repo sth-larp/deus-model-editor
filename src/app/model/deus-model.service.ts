@@ -33,9 +33,20 @@ export class DeusModelService {
         let h = new Headers( [{ 'Content-Type' : 'application/json'}, {'Accept':'application/json'}] );
         let options = new RequestOptions({ headers: h });
 
+        let lastRev = "";
+
         return Observable.timer(0,10000)
                     .flatMap( x => this.http.get(url) )
-                    .map( response => this.processModelJson(response.json()) )
+                    .map( response => response.json() )
+                    .filter( (json,i) => {
+                                if(json._rev != lastRev){
+                                    lastRev = json._rev;
+                                    return true;
+                                }
+                                console.log("Model not changed!");
+                                return false;
+                            } )
+                    .map( json => this.processModelJson(json) )
                     .share();
 
     }
