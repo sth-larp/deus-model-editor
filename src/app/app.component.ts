@@ -44,6 +44,4 @@ export class AppComponent {
             this.isAutoUpdate = true;
         }
     }
-
-
 }

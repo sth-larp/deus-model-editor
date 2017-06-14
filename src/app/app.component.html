@@ -7,17 +7,21 @@
                     <label for="charID" class="col-form-label">Character ID</label>
                 </div>
                 <div class="col-2">
-                    <input class="form-control" type="text" value="" id="charID" [(ngModel)]="deusModelService.charID" (keyup.enter)="loadModel()">
+                    <input class="form-control" type="text" value="" id="charID"
+                            [(ngModel)]="deusModelService.charID" (keyup.enter)="loadModel()"/>
                 </div>
                 <div>
                     <label for="charPass" class="col-form-label">Password</label>
                 </div>
                 <div class="col-2">
-                    <input type="password" class="form-control" value="9999" id="charPass"  [(ngModel)]="deusModelService.charPass" (keyup.enter)="loadModel()">
+                    <input type="password" class="form-control" value="9999" id="charPass"
+                        [(ngModel)]="deusModelService.charPass" (keyup.enter)="loadModel()"/>
                 </div>
                 <div class="col text-right">
-                    <button type="button" class="btn btn-primary" (click)="loadModel()" >Load Model</button>
-                    <button type="button" class="btn" [class.btn-success]="this.isAutoUpdate" [class.btn-default]="!this.isAutoUpdate" (click)="autoUpdateToogle()" >Auto</button>
+                    <button type="button" class="btn btn-primary" style="height: 3rem;" (click)="loadModel()" >Load Model</button>
+                    <button type="button" class="btn btn-sm"  style="height: 3rem;" [class.btn-success]="this.isAutoUpdate"
+                            [class.btn-default]="!this.isAutoUpdate"
+                            (click)="autoUpdateToogle()" >Auto<br/>Reload</button>
                 </div>
             </div>
         </div>

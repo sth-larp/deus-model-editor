@@ -25,7 +25,8 @@ export class DeusModelService {
     }
 
     getModel(type: string): Observable<any> {
-        if(!this.dbNames.hasOwnProperty(type)) { return null; }
+        if(!this.dbNames.hasOwnProperty(type)) { Observable.empty(); }
+        if(!this.charID.match(/^\d{4,5}/i)){ return Observable.empty(); }
 
         let url = this.couchDbUrl + "/" + this.dbNames[type] + "/" + this.charID;
 
@@ -41,6 +42,8 @@ export class DeusModelService {
 
     //Преобразует JSON модели в объект с информацией об обновлении (пока заглушки)
     private processModelJson( obj : any ): any {
+        if(obj == null) { return null; }
+
         let retObj: any = null;
 
         if(!Array.isArray(obj)){

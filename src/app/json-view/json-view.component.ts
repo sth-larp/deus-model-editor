@@ -35,15 +35,19 @@ export class JsonViewComponent implements OnInit {
 //Members
     ngOnInit() {}
 
-    subscribeModel( type: string ){
+    subscribeModel( type: string ): boolean{
         this.unsubscribeModel();
         this.subscription = this.modelService.getModel(type).subscribe( data => this.refreshModelLInes(data) );
+
+        return (this.subscription != null);
     }
 
-    unsubscribeModel(){
+    unsubscribeModel(): boolean{
         if(this.subscription && !this.subscription.closed){
             this.subscription.unsubscribe();
+            return true;
         }
+        return false;
     }
 
     //Перезаливает список строк для отображения из источника
