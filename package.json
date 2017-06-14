@@ -6,6 +6,7 @@
     "ng": "ng",
     "start": "ng serve --base-href /me/ --deploy-url /me/",
     "build": "ng build",
+    "build-prod": "ng build --env=prod",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e"
