@@ -217,6 +217,10 @@ export class JsonViewComponent implements OnInit {
     genSimpleView(obj: any, indent: number): JsonTextLine {
         let ret: JsonTextLine = new JsonTextLine("");
 
+        if(obj == null){
+            debugger;
+        }
+
         if(typeof obj.__value == "string"){
             ret.text = `"${obj.__value}"`;
         }else if(typeof obj.__value == "number" || typeof obj.__value == "boolean"){

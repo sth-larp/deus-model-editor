@@ -26,7 +26,7 @@ export class DeusModelService {
 
     getModel(type: string): Observable<any> {
         if(!this.dbNames.hasOwnProperty(type)) { Observable.empty(); }
-        if(!this.charID.match(/^\d{4,5}/i)){ return Observable.empty(); }
+        if(!this.charID){ return Observable.empty(); }
 
         let url = this.couchDbUrl + "/" + this.dbNames[type] + "/" + this.charID;
 
@@ -70,7 +70,7 @@ export class DeusModelService {
 
         for(let p in obj){
             if(obj[p] == null ){
-                retObj[p] = null;
+                retObj[p] = { __value: null, __status: "none" }
             }else if(typeof obj[p] == "object"){
                 retObj[p] = this.processModelJson( obj[p] );
             }else if(typeof obj[p] == "string" || typeof obj[p] == "number" ||  typeof obj[p] == "boolean"){
