@@ -20,11 +20,28 @@ export class DeusModelService {
     };
 
     constructor(private http: Http)
-     {
+    {
         this.model = new DeusModel();
     }
 
-    getModel(type: string): Observable<any> {
+
+    sentEvent(name: string, evtData: string): Observable<Response> {
+        //let url = "http://alice.digital:8157/events";
+        let url = this.couchDbUrl + "/events-dev2"
+
+        let event = {
+                eventType : name,
+                timestamp: Date().valueOf(),
+                characterId: this.charID,
+                data : evtData
+            };
+
+        console.log("try to send!");
+
+        return this.http.post(url, event);
+    }
+
+    getModel(type: string): Observable<Response> {
         if(!this.dbNames.hasOwnProperty(type)) { Observable.empty(); }
         if(!this.charID){ return Observable.empty(); }
 

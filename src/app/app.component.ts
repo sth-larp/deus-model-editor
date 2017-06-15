@@ -17,7 +17,25 @@ import { NgbDropdown, NgbDropdownConfig } from '@ng-bootstrap/ng-bootstrap';
 export class AppComponent {
     @ViewChild(JsonViewComponent) jsonView : JsonViewComponent;
 
+    @Input() eventName: string = "_RefreshModel";
+    @Input() eventData: string = "{ }";
+
     title = 'Deus 2017 Model Editor';
+
+    preloadEvents = [
+            {
+                name: "Event 1",
+                type: "event1"
+            },
+            {
+                name: "Event 2",
+                type: "event2"
+            },
+            {
+                name: "Event 3",
+                type: "event3"
+            },
+        ];
 
     isAutoUpdate: boolean = false;
     subscription: any = null;
@@ -29,6 +47,9 @@ export class AppComponent {
     constructor(private deusModelService: DeusModelService) {
     }
 
+    sentEvent(){
+        this.deusModelService.sentEvent(this.eventName, this.eventData).subscribe( response => console.log(`Sent result: ${response.statusText}`) );
+    }
 
     loadModel(): void {
         this.jsonView.subscribeModel(this.modelViewType);

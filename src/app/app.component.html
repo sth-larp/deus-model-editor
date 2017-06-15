@@ -18,10 +18,18 @@
                         [(ngModel)]="deusModelService.charPass" (keyup.enter)="loadModel()"/>
                 </div>
                 <div class="col text-right">
-                    <button type="button" class="btn btn-primary" style="height: 3rem;" (click)="loadModel()" >Load Model</button>
-                    <button type="button" class="btn btn-sm"  style="height: 3rem;" [class.btn-success]="this.isAutoUpdate"
+                    <button type="button" class="btn btn-primary px-6" style="height: 3rem;"
+                            [disabled]="deusModelService.charID==''"
+                            (click)="loadModel()" >
+                            Load Model
+                    </button>
+                    <button type="button" class="btn btn-sm"  style="height: 3rem;"
+                            [class.btn-success]="this.isAutoUpdate"
+                            [disabled]="deusModelService.charID==''"
                             [class.btn-default]="!this.isAutoUpdate"
-                            (click)="autoUpdateToogle()" >Auto<br/>Reload</button>
+                            (click)="autoUpdateToogle()" >
+                            Auto<br/>Reload
+                    </button>
                 </div>
             </div>
         </div>
@@ -30,46 +38,82 @@
 </div>
 
 <div class="row">
-  <div class="col-md-6 px-2">
-    <div class="card">
-        <div class="card-header">
-            <ul class="nav nav-tabs card-header-tabs">
-                <li class="nav-item">
-                    <a class="nav-link active" [class.active]="modelViewType=='base'" (click)="modelViewType='base'; loadModel();" href="#">Base Model</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" [class.active]="modelViewType=='work'" (click)="modelViewType='work'; loadModel();" href="#">Work Model</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" [class.active]="modelViewType=='view'" (click)="modelViewType='view'; loadModel();" href="#">View Model</a>
-                </li>
-            </ul>
-        </div>
-        <div class="card-block">
-            <dme-json-view></dme-json-view>
-         </div>
-    </div>
-  </div>
-  <div class="col-md-6 px-2">
-    <div class="card" >
-      <div class="card-header">
-        <ul class="nav nav-tabs card-header-tabs">
-            <li class="nav-item">
-                <a class="nav-link active" [class.active]="rightPaneType=='events'" (click)="rightPaneType='events'" href="#">Events</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" [class.active]="rightPaneType=='editor'" (click)="rightPaneType='editor'" href="#">Editor</a>
-            </li>
-        </ul>
-      </div>
-      <div class="card-block" [style.display]="rightPaneType=='events' ? 'block' : 'none'">
-        <div>Events</div>
-      </div>
-      <div class="card-block" [style.display]="rightPaneType=='editor' ? 'block' : 'none'">
-        <div>Editor</div>
-      </div>
-    </div>
-  </div>
-</div>
 
+    <div class="col-md-5 px-2">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" [class.active]="rightPaneType=='events'" (click)="rightPaneType='events'" href="#">Events</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [class.active]="rightPaneType=='editor'" (click)="rightPaneType='editor'" href="#">Editor</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-block" [style.display]="rightPaneType=='events' ? 'block' : 'none'">
+                    <div class="row">
+                        <div class="form-group col-md-12">
+                            <label for="eventNameText">Event type</label>
+                            <div class="input-group">
+                                <input [(ngModel)]="eventName" type="text" class="form-control" id="eventNameText" aria-label="Event name">
+                                <div ngbDropdown class="input-group-btn">
+                                    <button type="button" class="btn btn-secondary" id="eventNameDropdownBtn" ngbDropdownToggle>Events</button>
+                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="eventNameDropdownBtn">
+                                        <a *ngFor="let evt of preloadEvents"  class="dropdown-item" (click)="eventName = evt.type" href="#">{{evt.name}}</a>
+                                        <div role="separator" class="dropdown-divider"></div>
+                                        <a class="dropdown-item" (click)="eventName = '_RefreshModel'" href="#">Refresh Event</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 form-group">
+                            <label for="eventData">Event Data</label>
+                            <textarea [(ngModel)]="eventData" class="form-control" id="eventData" rows="3"></textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 text-right">
+                            <button type="button" class="btn btn-danger mr-3" style="height: 3rem;"
+                                 [disabled]="eventName=='' || deusModelService.charID==''"
+                                 (click)="sentEvent()">
+                                    Send &amp; Refresh
+                            </button>
+                            <button type="button" class="btn btn-secondary ml-3" style="height: 3rem;"
+                                [disabled]="eventName=='' || deusModelService.charID==''">
+                                    Send Event
+                            </button>
+                        </div>
+                    </div>
+            </div>
+            <div class="card-block" [style.display]="rightPaneType=='editor' ? 'block' : 'none'">
+                <div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7 px-2">
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link active" [class.active]="modelViewType=='base'" (click)="modelViewType='base'; loadModel();" href="#">Base Model</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [class.active]="modelViewType=='work'" (click)="modelViewType='work'; loadModel();" href="#">Work Model</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" [class.active]="modelViewType=='view'" (click)="modelViewType='view'; loadModel();" href="#">View Model</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-block">
+                <dme-json-view></dme-json-view>
+            </div>
+        </div>
+    </div>
+</div>
 
