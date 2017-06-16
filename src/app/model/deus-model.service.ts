@@ -3,13 +3,15 @@ import { DeusModel } from './DeusModel'
 import { Observable, ConnectableObservable } from 'rxjs/Rx';
 import { Headers, Response, Request, Http, RequestOptions, RequestOptionsArgs } from '@angular/http';
 
+import { REFRESH_EVENT_NAME } from "../data/preload-events"
+
 @Injectable()
 export class DeusModelService {
 
+    refreshEventName: string = REFRESH_EVENT_NAME;
+
     @Input() charID: String = "";
     @Input() charPass: String = "";
-
-    model: DeusModel = null;
 
     private couchDbUrl = "http://dev.alice.digital:5984";
 
@@ -19,16 +21,14 @@ export class DeusModelService {
         view: "view-models-dev2"
     };
 
-    constructor(private http: Http) {
-        this.model = new DeusModel();
-    }
+    constructor(private http: Http) {}
 
 
-    sentEvent(name: string, evtData: string): Observable<Response> {
+    sentEvent(name: string, evtData: string, refresh: boolean): Observable<Response> {
         let url = "http://alice.digital:8157/events/" + this.charID;
         let h = new Headers({ 'Content-Type': 'application/json' });
 
-        let event = {
+        let eventsList = {
             "events": [
                 {
                     eventType: name,
@@ -39,9 +39,22 @@ export class DeusModelService {
             ]
         };
 
-        console.log("try to send!");
+        if(name != this.refreshEventName && refresh){
+            eventsList.events.push( {
+                            eventType: this.refreshEventName,
+                            timestamp: Date.now().valueOf(),
+                            characterId: this.charID,
+                            data: ""
+                    } );
+        }
 
-        return this.http.post(url, JSON.stringify(event), {headers: h});
+        console.log("Send events: " + eventsList.events
+                                        .map( e => e.eventType )
+                                        .join(",")
+                                    );
+
+        let eventSource = this.http.post(url, JSON.stringify(eventsList), {headers: h});
+        return eventSource;
     }
 
     getModel(type: string): Observable<Response> {
@@ -55,6 +68,7 @@ export class DeusModelService {
 
         let lastRev = "";
 
+        //Вернуть комбинацию из источника с обновление раз в 10 сек и принудительного
         return Observable.timer(0, 10000)
             .flatMap(x => this.http.get(url))
             .map(response => response.json())
@@ -68,7 +82,6 @@ export class DeusModelService {
             })
             .map(json => this.processModelJson(json))
             .share();
-
     }
 
     //Преобразует JSON модели в объект с информацией об обновлении (пока заглушки)

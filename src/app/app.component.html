@@ -1,3 +1,4 @@
+<!--Верхний блок с кнопками и логином\паролем-->
 <div class="row">
   <div class="col-md-12 p-2">
     <div class="card">
@@ -17,10 +18,12 @@
                     <input type="password" class="form-control" value="9999" id="charPass"
                         [(ngModel)]="deusModelService.charPass" (keyup.enter)="loadModel()"/>
                 </div>
+
+                <!--Кнопки загрузки данных модели-->
                 <div class="col text-right">
                     <button type="button" class="btn btn-primary px-6" style="height: 3rem;"
                             [disabled]="deusModelService.charID==''"
-                            (click)="loadModel()" >
+                            (click)="loadModel();showAlertText('Model load!!!');" >
                             Load Model
                     </button>
                     <button type="button" class="btn btn-sm"  style="height: 3rem;"
@@ -36,9 +39,11 @@
     </div>
   </div>
 </div>
+<!--Finish: Верхний блок с кнопками и логином\паролем -->
 
 <div class="row">
 
+    <!--Левый блок с редакторами и кнопками-->
     <div class="col-md-5 px-2">
         <div class="card">
             <div class="card-header">
@@ -51,6 +56,8 @@
                     </li>
                 </ul>
             </div>
+
+            <!--Управление событиями: посылка и очередь-->
             <div class="card-block" [style.display]="rightPaneType=='events' ? 'block' : 'none'">
                     <div class="row">
                         <div class="form-group col-md-12">
@@ -60,9 +67,15 @@
                                 <div ngbDropdown class="input-group-btn">
                                     <button type="button" class="btn btn-secondary" id="eventNameDropdownBtn" ngbDropdownToggle>Events</button>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="eventNameDropdownBtn">
-                                        <a *ngFor="let evt of preloadEvents"  class="dropdown-item" (click)="eventName = evt.type" href="#">{{evt.name}}</a>
+
+                                        <!--Список готовых событий-->
+                                        <a *ngFor="let evt of preloadEvents"  class="dropdown-item"
+                                                             (click)="eventName = evt.type; eventData=evt.template" href="#">{{evt.name}}</a>
+
+                                        <!--Событие Refresh-->
                                         <div role="separator" class="dropdown-divider"></div>
-                                        <a class="dropdown-item" (click)="eventName = '_RefreshModel'" href="#">Refresh Event</a>
+                                        <a class="dropdown-item" (click)="eventName = this.deusModelService.refreshEventName; eventData=''"
+                                                href="#">Refresh Event</a>
                                     </div>
                                 </div>
                             </div>
@@ -78,23 +91,30 @@
                         <div class="col-md-12 text-right">
                             <button type="button" class="btn btn-danger mr-3" style="height: 3rem;"
                                  [disabled]="eventName=='' || deusModelService.charID==''"
-                                 (click)="sentEvent()">
+                                 (click)="sentEvent(true)">
                                     Send &amp; Refresh
                             </button>
                             <button type="button" class="btn btn-secondary ml-3" style="height: 3rem;"
-                                [disabled]="eventName=='' || deusModelService.charID==''">
+                                [disabled]="eventName=='' || deusModelService.charID==''"
+                                (click)="sentEvent(false)">
                                     Send Event
                             </button>
                         </div>
                     </div>
             </div>
+            <!--Finish: Управление событиями: посылка и очередь-->
+
+            <!--Редактор модели -->
             <div class="card-block" [style.display]="rightPaneType=='editor' ? 'block' : 'none'">
                 <div>
                 </div>
             </div>
+            <!--Finish: Редактор модели -->
         </div>
     </div>
+    <!--Finish: Левый блок с редакторами и кнопками-->
 
+    <!--Правый блок с JSON'ами-->
     <div class="col-md-7 px-2">
         <div class="card">
             <div class="card-header">
@@ -115,5 +135,8 @@
             </div>
         </div>
     </div>
+    <!--Finish: Правый блок с JSON'ами-->
+
 </div>
 
+<ngb-alert class="fixed-bottom" [@alertState]="alertState" type="success" [dismissible]="true">{{alertText}}</ngb-alert>
