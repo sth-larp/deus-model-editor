@@ -27,8 +27,6 @@ export class DeusModelService {
     sentEvent(name: string, evtData: string): Observable<Response> {
         let url = "http://alice.digital:8157/events/" + this.charID;
         let h = new Headers({ 'Content-Type': 'application/json' });
-        RequestOptions
-        //let url = this.couchDbUrl + "/events-dev2"
 
         let event = {
             "events": [
@@ -41,11 +39,9 @@ export class DeusModelService {
             ]
         };
 
-        debugger;
-
         console.log("try to send!");
 
-        return this.http.post(url, JSON.stringify(event), {method: "POST", headers: h, withCredentials: false});
+        return this.http.post(url, JSON.stringify(event), {headers: h});
     }
 
     getModel(type: string): Observable<Response> {
