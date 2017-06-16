@@ -26,7 +26,7 @@ export class DeusModelService {
 
     sentEvent(name: string, evtData: string): Observable<Response> {
         let url = "http://alice.digital:8157/events/" + this.charID;
-        let h = new Headers([{ 'Content-Type': 'application/json' }]);
+        let h = new Headers({ 'Content-Type': 'application/json' });
         RequestOptions
         //let url = this.couchDbUrl + "/events-dev2"
 
