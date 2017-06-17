@@ -9,12 +9,14 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { AppComponent } from './app.component';
 import { JsonViewComponent } from './json-view/json-view.component';
 import { JsonLineShowComponent } from './json-line-show/json-line-show.component';
+import { LogWindowComponent } from './log-window/log-window.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     JsonViewComponent,
-    JsonLineShowComponent
+    JsonLineShowComponent,
+    LogWindowComponent
   ],
   imports: [
     NgbModule.forRoot(),

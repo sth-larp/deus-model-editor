@@ -7,6 +7,7 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
 
 
 import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from './data/preload-events'
+import { LogWindowComponent } from "./log-window/log-window.component"
 
 @Component({
     selector: 'app-root',
