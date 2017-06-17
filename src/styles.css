@@ -1,7 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-@import 'css/ng2-select.css';
+/*@import 'css/ng2-select.css';*/
 
-.form-control::placeholder {
-  color: #999;
-  opacity: 1;
-}
+@import 'css/dme.css';

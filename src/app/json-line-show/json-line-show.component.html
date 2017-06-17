@@ -1,10 +1,10 @@
-<table class="m-0 p-0 w-100">
+<!--<table class="m-0 p-0 w-100">
     <ng-container *ngFor="let jsonLine of jsonLines; let i=index">
     <tr *ngIf="!jsonLine.subLines" class="m-0 p-0" >
         <td class="{{'line-numbers-color small text-left ' + getRowClass(jsonLine)}}" style="width: 3rem;">{{jsonLine.lineNumber}}</td>
 
         <td class="{{getRowClass(jsonLine)}}">
-            <pre class="text-primary" *ngIf="!jsonLine.subLines" class="m-0">{{jsonLine.text}}</pre>
+            <pre class="text-primary" *ngIf="!jsonLine.subLines" class="m-0" [innerHTML]="jsonLine.text" ></pre>
         </td>
     </tr>
     <tr *ngIf="jsonLine.subLines" >
@@ -13,4 +13,13 @@
         </td>
     </tr>
     </ng-container>
-</table>
+</table>-->
+
+<ng-container *ngFor="let jsonLine of jsonLines; let i=index">
+    <ng-container *ngIf="!jsonLine.subLines">
+        <div class="jsonCode jsonLine" [innerHTML]="jsonLine.text"></div>
+    </ng-container>
+
+    <dme-json-lines-show *ngIf="jsonLine.subLines" [jsonLines]="jsonLine.subLines"></dme-json-lines-show>
+</ng-container>
+

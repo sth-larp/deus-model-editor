@@ -21,7 +21,7 @@ export class JsonTextLine{
 })
 export class JsonViewComponent implements OnInit {
 //Constants
-    private indentString = "  ";
+    private indentString = '<span class="dmeJsonIndent"></span>';
 
 //Data fields
     public textModelLines: JsonTextLine[] = [];
@@ -31,6 +31,19 @@ export class JsonViewComponent implements OnInit {
 
 //Constructor
     constructor(private modelService: DeusModelService) {}
+
+//JSON tokens classes
+    elementsClass = {
+        field: "dmeJsonField",
+        stringValue : "dmeJsonString",
+        numValue : "dmeJsonNum",
+        boolValue : "dmeJsonBool",
+        nullValue : "dmeJsonNull",
+        indent : "dmeJsonIndent",
+        leftBracket : "dmeJsonLBracket",
+        rightBracket : "dmeJsonRBracket",
+        emptyBrackets : "dmeJsonEmptyBrackets"
+    }
 
 //Members
     ngOnInit() {}
@@ -111,6 +124,7 @@ export class JsonViewComponent implements OnInit {
 
     //Общая функция для получения строк для отображения
     genModelValueView(obj: any, indent: number): JsonTextLine[]{
+
         switch(this.getModelObjectType(obj)){
             case "object":
                 return this.genObjectView(obj, indent);
@@ -128,9 +142,11 @@ export class JsonViewComponent implements OnInit {
 
     //Генерации строки отображения для простого массива
     genSimpleArrayView(obj: any, indent: number): JsonTextLine[] {
-        if(obj.length == 0) { return [new JsonTextLine("[ ]")]; }
+        if(obj.length == 0) { return [new JsonTextLine(
+                                            this.toSpan("[ ]","emptyBrackets"),
+                                            obj.__status)]; }
 
-        let retText: string = "[ ";
+        let retText: string = this.toSpan("[", "leftBracket") + " ";
         let status = "none";
 
         for(let i=0; i<obj.length; i++){
@@ -144,7 +160,7 @@ export class JsonViewComponent implements OnInit {
             if(simpleVal.status != "none") { status = simpleVal.status; }
         }
 
-        retText += " ]";
+        retText += " " + this.toSpan("]", "rightBracket");
 
         return [new JsonTextLine(retText,status)]
     }
@@ -152,9 +168,13 @@ export class JsonViewComponent implements OnInit {
 
     //Генерации строк отображения для обычного массива
     genArrayView(obj: any, indent: number): JsonTextLine[] {
-        if(obj.length == 0) { return [new JsonTextLine("[ ]")]; }
+        if(obj.length == 0) { return [new JsonTextLine(
+                                            this.toSpan("[ ]","emptyBrackets"),
+                                            obj.__status)]
+                            }
 
-        let retText: JsonTextLine[] = [ new JsonTextLine("[") ]
+        let retText: JsonTextLine[] = [ new JsonTextLine(this.toSpan("[", "leftBracket")) ];
+
         let lineIndent = this.indentString.repeat(indent+1);
 
         for(let i=0; i<obj.length; i++){
@@ -172,16 +192,22 @@ export class JsonViewComponent implements OnInit {
             }
         }
 
-        retText.push( new JsonTextLine(this.indentString.repeat(indent) + "]") );
+        retText.push( new JsonTextLine(this.indentString.repeat(indent) + this.toSpan("]", "rightBracket")) );
 
         return retText;
     }
 
     //Генерации строк отображения для объекта
     genObjectView(obj: any, indent: number): JsonTextLine[]{
-        if(Object.keys(obj).length == 0) { return [new JsonTextLine("{ }", obj.__status)] }
+        if(Object.keys(obj).length == 0) { return [new JsonTextLine(
+                                                            this.toSpan("{ }","emptyBrackets"),
+                                                            obj.__status)]
+                                          }
 
-        let retText: JsonTextLine[] = [ new JsonTextLine("{", obj.__status) ];
+        let retText: JsonTextLine[] = [ new JsonTextLine(
+                                            this.toSpan("{", "leftBracket"),
+                                            obj.__status) ];
+
         let lineIndent = this.indentString.repeat(indent+1);
 
         let i = 0
@@ -193,7 +219,7 @@ export class JsonViewComponent implements OnInit {
             }
 
             let nodeLines = this.genModelValueView(obj[p], indent+1);
-            nodeLines[0].text = lineIndent + `"${p}": ${nodeLines[0].text}`;
+            nodeLines[0].text = lineIndent + this.toSpan(`"${p}"`,"field") + " : " + nodeLines[0].text;
 
             if(i != Object.keys(obj).length-1){
                 nodeLines[nodeLines.length-1].text = nodeLines[nodeLines.length-1].text + ","
@@ -208,7 +234,9 @@ export class JsonViewComponent implements OnInit {
             i++;
         }
 
-        retText.push( new JsonTextLine(this.indentString.repeat(indent) + "}", obj.__status) );
+        retText.push( new JsonTextLine(this.indentString.repeat(indent) +
+                                                this.toSpan("}","rightBracket"),
+                                                obj.__status) );
 
         return retText;
     }
@@ -217,21 +245,31 @@ export class JsonViewComponent implements OnInit {
     genSimpleView(obj: any, indent: number): JsonTextLine {
         let ret: JsonTextLine = new JsonTextLine("");
 
-        if(obj == null){
-            debugger;
-        }
+        switch(typeof obj.__value){
+            case "string":
+                ret.text = this.toSpan(`"${obj.__value}"`, "stringValue");
+                break;
 
-        if(typeof obj.__value == "string"){
-            ret.text = `"${obj.__value}"`;
-        }else if(typeof obj.__value == "number" || typeof obj.__value == "boolean"){
-            ret.text = `${obj.__value}`;
-        }else if(obj.__value == null){
-            ret.text = "null";
+            case "boolean":
+                ret.text = this.toSpan(`${obj.__value}`, "boolValue");
+                break;
+
+            case "number":
+                 ret.text = this.toSpan(`${obj.__value}`, "numValue");
+                 break;
+
+            default:
+                 ret.text = this.toSpan("null", "nullValue");
         }
 
         ret.status = obj.__status;
 
         return ret;
+    }
+
+    //Подставляет <span></span> вокруг значения
+    toSpan(val: string, type: string){
+        return `<span class="${this.elementsClass[type]}">${val}</span>`;
     }
 
 }

@@ -1,2 +1,10 @@
-<dme-json-lines-show [jsonLines]="textModelLines" ></dme-json-lines-show>
-
+<table class="m-0 p-0">
+    <tr>
+        <td class="dmeJsonLineNumberBlock">
+            <div class="dmeJsonLineNumber" *ngFor="let jsonLine of textModelLines; let i=index">{{i}}</div>
+        </td>
+        <td>
+            <dme-json-lines-show [jsonLines]="textModelLines" ></dme-json-lines-show>
+        </td>
+    </tr>
+</table>

@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css?family=Droid+Sans+Mono');
+
+.form-control::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+.jsonLine, .dmeJsonIndent, .dmeJsonLineNumber {
+    height: 20px;
+    vertical-align: middle;
+}
+
+.dmeJsonLineNumberBlock, .dmeJsonLineNumber {
+    width: 30px;
+}
+
+.dmeJsonLineNumber {
+    text-align: center;
+    font-weight: bolder;
+    color: gray;
+}
+
+.jsonCode, .dmeJsonLineNumber, .dmeJsonIndent, .dmeJsonField, .dmeJsonLBracket, .dmeJsonRBracket, .dmeJsonEmptyBrackets, .dmeJsonString, .dmeJsonNum, .dmeJsonBool, .dmeJsonNull {
+    font-family: 'Droid Sans Mono', 'monaco', monospace;
+    white-space: pre;
+    font-size: 10pt;
+}
+
+.line-numbers-color {
+    color: lightslategrey;
+}
+
+.dmeJsonField {
+    color: black;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonLBracket, .dmeJsonRBracket, .dmeJsonEmptyBrackets {
+    color: inherit;
+    font-weight: normal;
+}
+
+.dmeJsonString {
+    color: green;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonNum {
+    color:blue;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonBool {
+    color: brown;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonNull {
+    color: grey;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonIndent {
+    display: inline-block;
+    width: 20px;
+    border-left: 1px solid lightgray;
+    opacity: 0.7;
+}
