@@ -1,4 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
-@import 'css/bootstrap.min.css';
-@import 'css/bootstrap-grid.min.css';
-@import 'css/bootstrap-reboot.min.css';
+@import 'css/ng2-select.css';
+
+.form-control::placeholder {
+  color: #999;
+  opacity: 1;
+}

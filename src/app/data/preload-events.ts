@@ -1,4 +1,11 @@
+export const REFRESH_EVENT_NAME = "_RefreshModel";
+
 export const PRELOAD_EVENTS  = [
+            {
+                name: "Refresh event",
+                type: REFRESH_EVENT_NAME,
+                template: ""
+            },
             {
                 name: "usePill",
                 type: "usePill",
@@ -15,5 +22,3 @@ export const PRELOAD_EVENTS  = [
                 template: "{}"
             },
     ];
-
-export const REFRESH_EVENT_NAME = "_RefreshModel";

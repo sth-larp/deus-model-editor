@@ -1,27 +1,16 @@
 <!--Верхний блок с кнопками и логином\паролем-->
-<div class="row">
-  <div class="col-md-12 p-2">
-    <div class="card">
+<div class="p-0 topBarHeight" style="position: fixed; z-index: 120; width: 100%">
+    <div class="card border-left-0 border-right-0" >
         <div class="card-block">
-            <div class="row">
-                <div>
-                    <label for="charID" class="col-form-label">Character ID</label>
-                </div>
-                <div class="col-2">
-                    <input class="form-control" type="text" value="" id="charID"
+            <form class="form-inline justify-content-end">
+                    <input name="CharID" class="form-control mx-3" type="text" id="charID" placeholder="Character ID or E-mail"
                             [(ngModel)]="deusModelService.charID" (keyup.enter)="loadModel()"/>
-                </div>
-                <div>
-                    <label for="charPass" class="col-form-label">Password</label>
-                </div>
-                <div class="col-2">
-                    <input type="password" class="form-control" value="9999" id="charPass"
+
+                    <input name="Password" type="password" class="form-control mx-3" id="charPass" placeholder="Password"
                         [(ngModel)]="deusModelService.charPass" (keyup.enter)="loadModel()"/>
-                </div>
 
                 <!--Кнопки загрузки данных модели-->
-                <div class="col text-right">
-                    <button type="button" class="btn btn-primary px-6" style="height: 3rem;"
+                    <button type="button" class="btn btn-primary px-6 ml-10 mr-3" style="height: 3rem;"
                             [disabled]="deusModelService.charID==''"
                             (click)="loadModel();showAlertText('Model load!!!');" >
                             Load Model
@@ -33,20 +22,22 @@
                             (click)="autoUpdateToogle()" >
                             Auto<br/>Reload
                     </button>
-                </div>
-            </div>
+            </form>
         </div>
     </div>
-  </div>
 </div>
 <!--Finish: Верхний блок с кнопками и логином\паролем -->
+
+<div class="topBarHeight"></div>
+
+<div class="container-fluid p-4">
 
 <div class="row">
 
     <!--Левый блок с редакторами и кнопками-->
     <div class="col-md-5 px-2">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header dme-card-header">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
                         <a class="nav-link active" [class.active]="rightPaneType=='events'" (click)="rightPaneType='events'" href="#">Events</a>
@@ -62,23 +53,27 @@
                     <div class="row">
                         <div class="form-group col-md-12">
                             <label for="eventNameText">Event type</label>
-                            <div class="input-group">
+
+                            <select id="mdeEventSelector" class="form-control" data-plugin="mde-select2-element">
+                                <option *ngFor="let evt of preloadEvents" [value]="evt.type">{{evt.name}}</option>
+                            </select>
+
+                            <!--<div class="input-group">
                                 <input [(ngModel)]="eventName" type="text" class="form-control" id="eventNameText" aria-label="Event name">
                                 <div ngbDropdown class="input-group-btn">
                                     <button type="button" class="btn btn-secondary" id="eventNameDropdownBtn" ngbDropdownToggle>Events</button>
                                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="eventNameDropdownBtn">
-
                                         <!--Список готовых событий-->
-                                        <a *ngFor="let evt of preloadEvents"  class="dropdown-item"
-                                                             (click)="eventName = evt.type; eventData=evt.template" href="#">{{evt.name}}</a>
+                                        <!--<a *ngFor="let evt of preloadEvents"  class="dropdown-item"
+                                                             (click)="eventName = evt.type; eventData=evt.template" href="#">{{evt.name}}</a>-->
 
                                         <!--Событие Refresh-->
-                                        <div role="separator" class="dropdown-divider"></div>
+                                        <!--<div role="separator" class="dropdown-divider"></div>
                                         <a class="dropdown-item" (click)="eventName = this.deusModelService.refreshEventName; eventData=''"
-                                                href="#">Refresh Event</a>
-                                    </div>
+                                                href="#">Refresh Event</a>-->
+                                    <!--</div>
                                 </div>
-                            </div>
+                            </div>-->
                         </div>
                     </div>
                     <div class="row">
@@ -94,7 +89,7 @@
                                  (click)="sentEvent(true)">
                                     Send &amp; Refresh
                             </button>
-                            <button type="button" class="btn btn-secondary ml-3" style="height: 3rem;"
+                            <button type="button" class="btn btn-secondary" style="height: 3rem;"
                                 [disabled]="eventName=='' || deusModelService.charID==''"
                                 (click)="sentEvent(false)">
                                     Send Event
@@ -117,7 +112,7 @@
     <!--Правый блок с JSON'ами-->
     <div class="col-md-7 px-2">
         <div class="card">
-            <div class="card-header">
+            <div class="card-header dme-card-header">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
                         <a class="nav-link active" [class.active]="modelViewType=='base'" (click)="modelViewType='base'; loadModel();" href="#">Base Model</a>
@@ -139,6 +134,7 @@
 
 </div>
 
+</div>
 <!--<ngb-alert class="fixed-bottom" [@alertState]="alertState" type="success" [dismissible]="true">{{alertText}}</ngb-alert>-->
 
 <dme-log-window></dme-log-window>

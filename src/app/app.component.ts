@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild } from '@angular/core';
+import { Component, Input, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { JsonViewComponent, JsonTextLine } from './json-view/json-view.component'
 import { DeusModelService } from './model/deus-model.service'
 import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
@@ -8,6 +8,9 @@ import { trigger, state, style, animate, transition } from '@angular/animations'
 
 import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from './data/preload-events'
 import { LogWindowComponent } from "./log-window/log-window.component"
+
+declare var jquery:any;
+declare var $ :any;
 
 @Component({
     selector: 'app-root',
@@ -36,11 +39,6 @@ export class AppComponent {
 
     title = 'Deus 2017 Model Editor';
 
-    alertText = "Test Alert";
-    //isAlertVisible = false;
-    alertState = "hidden";
-    alertTimeout = -1;
-
     preloadEvents = PRELOAD_EVENTS;
 
     isAutoUpdate: boolean = false;
@@ -50,12 +48,16 @@ export class AppComponent {
 
     rightPaneType: string = "events";
 
-    constructor(private deusModelService: DeusModelService) {
+    constructor(private deusModelService: DeusModelService, private chageDetectRef: ChangeDetectorRef) {
         //Observable.from([1]).delay(10000).subscribe(x => { this.alertState = "hidden"; } )
         // Observable.timer(0, 1000).subscribe(x => {
         //         if(this.alertTimeout > 0){   }
         //     }
         // )
+    }
+
+    ngOnInit() {
+        $('#mdeEventSelector').on("change", (e) => this.selectEventName(e) );
     }
 
     sentEvent(refresh: boolean): void {
@@ -78,9 +80,9 @@ export class AppComponent {
         }
     }
 
-    showAlertText(text: string): void{
-        this.alertText = text;
-        this.alertState = "visible";
-        Observable.from([1]).delay(10000).subscribe(x => { this.alertState = "hidden"; } )
+    selectEventName( event: any ):void {
+        this.eventName = $('#mdeEventSelector').prop("value");
+        this.eventData = this.preloadEvents.find( (x) => x.type == this.eventName).template;
+        setTimeout(() => this.chageDetectRef.detectChanges(), 100);
     }
 }

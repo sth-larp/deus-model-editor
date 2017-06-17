@@ -1,0 +1,13 @@
+.topBarHeight {
+    height: 5rem;
+    max-height: 5rem;
+}
+
+.dme-card-header {
+    background-color: #BDBDBD;
+}
+
+.dme-card-header .nav-link:not(.active):hover {
+    color: #3e70c9;
+    border-color: transparent;
+}
