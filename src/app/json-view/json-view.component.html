@@ -1,10 +1,32 @@
-<table class="m-0 p-0">
+<table>
     <tr>
-        <td class="dmeJsonLineNumberBlock">
-            <div class="dmeJsonLineNumber" *ngFor="let jsonLine of textModelLines; let i=index">{{i}}</div>
+        <td>
+            <table class="dmeJsonLinesSidebar">
+                <tr *ngFor="let jsonLine of textModelLines; let i=index" [class.dmeHidden]="!jsonLine.isVisible">
+                    <td  class="m-0 p-0 dmeJsonLineNumberBlock">
+                        <div class="dmeJsonLineNumber" >{{i}}</div>
+                    </td>
+                    <td class="m-0 p-0 dmeJsonCollapseIconBlock" (click)="collapseButtonClick(i)">
+                        <ng-container *ngIf="jsonLine.collapseTrigger">
+                            <span *ngIf="!jsonLine.isTriggerCollapsed" class="dmeJsonCollapseIcon fa fa-caret-square-o-up"></span>
+                            <span *ngIf="jsonLine.isTriggerCollapsed" class="dmeJsonCollapseIcon fa fa-caret-square-o-down"></span>
+                        </ng-container>
+                    </td>
+            </table>
         </td>
         <td>
-            <dme-json-lines-show [jsonLines]="textModelLines" ></dme-json-lines-show>
+             <div *ngFor="let jsonLine of textModelLines; let i=index" class="jsonCode jsonLine text-left" [class.dmeHidden]="!jsonLine.isVisible">
+                <span [innerHTML]="jsonLine.text"></span>
+
+                	<button *ngIf="jsonLine.collapseTrigger" type="button" class="btn dmeTextReplaceBtn btn-outline-info btn-sm b-a-1 px-1 py-0"
+                            [class.dmeHidden]="!jsonLine.isTriggerCollapsed"
+                            (click)="collapseButtonClick(i)">
+                        <i class="fa fa-ellipsis-h" style="font-size: 9pt;"></i>
+                    </button>
+
+                    <span *ngIf="jsonLine.collapseTrigger" [innerHTML]="jsonLine.collapseStub"
+                        [class.dmeHidden]="!jsonLine.isTriggerCollapsed"></span>
+             </div>
         </td>
     </tr>
 </table>

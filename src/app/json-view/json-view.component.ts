@@ -5,11 +5,14 @@ import { DeusModelService } from '../model/deus-model.service';
 import { JsonLineShowComponent } from "../json-line-show/json-line-show.component"
 
 export class JsonTextLine{
-    lineNumber: number = 0;
+    public isTriggerCollapsed: boolean = false;
+    public isVisible: boolean = true;
 
-    constructor(public text: string,
-                public status:string = "none",
-                public subLines:JsonTextLine[] = null){}
+    constructor( public text: string,
+                 public status: string = "none",
+                 public collapseTrigger: boolean = false,
+                 public collapseStub: string = null,
+                 public collapseFinish: boolean = false ) { }
 };
 
 
@@ -66,24 +69,99 @@ export class JsonViewComponent implements OnInit {
     //Перезаливает список строк для отображения из источника
     refreshModelLInes( obj : any ){
         this.textModelLines = this.genObjectView(obj, 0);
-        this.setLineNumbers(this.textModelLines, 0);
+        this.collapseAll();
+    }
+
+    //Сворачивание или разворачивание блока
+    collapseButtonClick(line: number): void {
+        if(this.textModelLines[line].isTriggerCollapsed){
+            this.showBlock(line);
+        }else{
+            this.collapseBlock(line);
+        }
+
+        this.textModelLines[line].isTriggerCollapsed = !this.textModelLines[line].isTriggerCollapsed;
+    }
+
+    collapseBlock(line: number): void{
+        let flag: number = 1;
+
+        for(let i=line+1; i < this.textModelLines.length; i++ ){
+            if(flag == 0) { break; }
+
+            this.textModelLines[i].isVisible = false;
+
+            if(this.textModelLines[i].collapseTrigger) {
+                flag++;
+                this.textModelLines[i].isTriggerCollapsed=true;
+            }
+
+            if(this.textModelLines[i].collapseFinish) { flag--; }
+        }
+    }
+
+    showBlock(line:number): void{
+        let flag: number = 1;
+
+        for(let i=line+1; i < this.textModelLines.length; i++ ){
+            if(flag == 0) { break; }
+
+            if(flag == 1){
+                this.textModelLines[i].isVisible = true;
+            }
+
+            if(this.textModelLines[i].collapseTrigger) {
+                flag++;
+            }
+
+            if(this.textModelLines[i].collapseFinish) { flag--; }
+        }
+    }
+
+    collapseAll(): void{
+        let flag: number = 1;
+
+        for(let i=1; i < this.textModelLines.length; i++ ){
+            if(flag > 1){
+                this.textModelLines[i].isVisible = false;
+            }
+
+            if(this.textModelLines[i].collapseTrigger) {
+                flag++;
+                this.textModelLines[i].isTriggerCollapsed=true;
+            }
+
+            if(this.textModelLines[i].collapseFinish) { flag--; }
+         }
+    }
+
+    showAll(): void{
+         let flag: number = 0;
+
+        for(let i=0; i < this.textModelLines.length; i++ ){
+            this.textModelLines[i].isVisible = true;
+
+            if(this.textModelLines[i].collapseTrigger) {
+                this.textModelLines[i].isTriggerCollapsed=false;
+            }
+        }
     }
 
     //Проставляет номера строк после генерации строк для отображения
-    setLineNumbers( lines: JsonTextLine[], startNumber: number ): number {
-        let n = startNumber;
+    // setLineNumbers( lines: JsonTextLine[], startNumber: number ): number {
+    //     let n = startNumber;
 
-        lines.forEach( (cur, index) => {
-                if(!cur.subLines){
-                    cur.lineNumber = n;
-                    n++;
-                }else{
-                    n += this.setLineNumbers(cur.subLines, n);
-                }
-            },this );
+    //     lines.forEach( (cur, index) => {
+    //             if(!cur.subLines){
+    //                 cur.lineNumber = n;
+    //                 n++;
+    //             }else{
+    //                 n += this.setLineNumbers(cur.subLines, n);
+    //             }
+    //         },this );
 
-        return n - startNumber;
-    }
+    //     return n - startNumber;
+    // }
 
     //Возвращает тип объекта в JSONе (simple, numArray, array, object)
     getModelObjectType(obj: any): string{
@@ -173,7 +251,11 @@ export class JsonViewComponent implements OnInit {
                                             obj.__status)]
                             }
 
-        let retText: JsonTextLine[] = [ new JsonTextLine(this.toSpan("[", "leftBracket")) ];
+        let retText: JsonTextLine[] = [ new JsonTextLine( this.toSpan("[", "leftBracket"),
+                                                          "none",
+                                                          true,
+                                                          this.toSpan("]", "rightBracket"),
+                                                          ) ];
 
         let lineIndent = this.indentString.repeat(indent+1);
 
@@ -185,14 +267,12 @@ export class JsonViewComponent implements OnInit {
                 nodeLines[nodeLines.length-1].text = nodeLines[nodeLines.length-1].text + ","
             }
 
-            if(nodeLines.length == 1){
-                retText.push(nodeLines[0]);
-            }else{
-                retText.push( new JsonTextLine("","none",nodeLines) );
-            }
+            retText.push(...nodeLines)
         }
 
-        retText.push( new JsonTextLine(this.indentString.repeat(indent) + this.toSpan("]", "rightBracket")) );
+        retText.push( new JsonTextLine( this.indentString.repeat(indent) + this.toSpan("]", "rightBracket"),
+                                        "none",
+                                        false, null, true ) );
 
         return retText;
     }
@@ -206,7 +286,10 @@ export class JsonViewComponent implements OnInit {
 
         let retText: JsonTextLine[] = [ new JsonTextLine(
                                             this.toSpan("{", "leftBracket"),
-                                            obj.__status) ];
+                                            obj.__status,
+                                            true,
+                                            this.toSpan("}", "rightBracket"),
+                                            ) ];
 
         let lineIndent = this.indentString.repeat(indent+1);
 
@@ -218,25 +301,22 @@ export class JsonViewComponent implements OnInit {
                 continue;
             }
 
-            let nodeLines = this.genModelValueView(obj[p], indent+1);
+            let nodeLines: JsonTextLine[] = this.genModelValueView(obj[p], indent+1);
             nodeLines[0].text = lineIndent + this.toSpan(`"${p}"`,"field") + " : " + nodeLines[0].text;
 
             if(i != Object.keys(obj).length-1){
                 nodeLines[nodeLines.length-1].text = nodeLines[nodeLines.length-1].text + ","
             }
 
-            if(nodeLines.length == 1){
-                retText.push(nodeLines[0]);
-            }else{
-                retText.push( new JsonTextLine("","none",nodeLines) );
-            }
+            retText.push(...nodeLines);
 
             i++;
         }
 
         retText.push( new JsonTextLine(this.indentString.repeat(indent) +
                                                 this.toSpan("}","rightBracket"),
-                                                obj.__status) );
+                                                obj.__status,
+                                                false, null, true) );
 
         return retText;
     }

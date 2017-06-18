@@ -124,6 +124,14 @@
                         <a class="nav-link" [class.active]="modelViewType=='view'" (click)="modelViewType='view'; loadModel();" href="#">View Model</a>
                     </li>
                 </ul>
+                <div style="position: absolute; top: 0.5rem; right: 2rem; ">
+                    <button type="button" class="btn btn-outline-primary mx-3 waves-effect waves-light dmeBntJsonCollapse" (click)="jsonView.showAll()">
+                        <i class="ion-plus"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-primary waves-effect waves-light dmeBntJsonCollapse" (click)="jsonView.collapseAll()">
+                        <i class="ion-minus"></i>
+                    </button>
+                </div>
             </div>
             <div class="card-block">
                 <dme-json-view></dme-json-view>

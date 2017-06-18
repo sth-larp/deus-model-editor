@@ -5,7 +5,7 @@
   opacity: 1;
 }
 
-.jsonLine, .dmeJsonIndent, .dmeJsonLineNumber {
+.jsonLine, .dmeJsonIndent, .dmeJsonLineNumber, .dmeJsonCollapseIconBlock {
     height: 20px;
     vertical-align: middle;
 }
@@ -14,15 +14,52 @@
     width: 30px;
 }
 
+.dmeJsonCollapseIconBlock {
+    width: 25px;
+    text-align: center;
+}
+
 .dmeJsonLineNumber {
     text-align: center;
-    font-weight: bolder;
+    color: lightgray;
+}
+
+.dmeJsonLinesSidebar:hover .dmeJsonCollapseIcon {
+    visibility: visible;
+}
+
+.dmeJsonCollapseIcon {
+    font-size: 10pt;
+    color: #9E9E9E;
+    visibility: hidden;
+}
+
+.material-design .jsonLine .btn {
+  box-shadow: none;
+}
+
+.material-design .card-header .btn {
+    box-shadow: none;
+}
+
+.dmeBntJsonCollapse {
+    padding: 0px;
+    height: 30px;
+    width: 30px;
     color: gray;
+    border-color: gray;
+}
+
+.dmeTextReplaceBtn {
+    height: 12px;
+}
+
+.dmeHidden {
+    display: none;
 }
 
 .jsonCode, .dmeJsonLineNumber, .dmeJsonIndent, .dmeJsonField, .dmeJsonLBracket, .dmeJsonRBracket, .dmeJsonEmptyBrackets, .dmeJsonString, .dmeJsonNum, .dmeJsonBool, .dmeJsonNull {
     font-family: 'Droid Sans Mono', 'monaco', monospace;
-    white-space: pre;
     font-size: 10pt;
 }
 
