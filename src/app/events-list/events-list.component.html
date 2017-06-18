@@ -1,33 +1,33 @@
 <div class="w-100">
      <data-table id="persons-grid"
         [headerTitle]="'Model Events for '+ deusModelService.charID"
-        [items]="items"
+        [items]="_eventsList"
 
         [pagination]="false"
         [indexColumn]="true"
         [indexColumnHeader]="'#'"
-        [selectColumn]="true"
+        [selectColumn]="false"
         [multiSelect]="true"
         [selectOnRowClick]="true"
      >
 
         <data-table-column
-            [property]="'name'"
-            [header]="'Name'"
+            [property]="'timestamp'"
+            [header]="'Timestamp'"
             [sortable]="false"
             [resizable]="true">
         </data-table-column>
 
         <data-table-column
-            [property]="'data1'"
-            [header]="'Data1'"
+            [property]="'eventType'"
+            [header]="'Event Name'"
             [sortable]="false"
             [resizable]="true">
         </data-table-column>
 
         <data-table-column
-            [property]="'data2'"
-            [header]="'Data2'"
+            [property]="'data'"
+            [header]="'Event Data'"
             [sortable]="false"
             [resizable]="true">
         </data-table-column>

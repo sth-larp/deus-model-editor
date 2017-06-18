@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ChangeDetectorRef, ViewContainerRef } from '@angular/core';
+import { Component, Input, ViewChild, ChangeDetectorRef, ViewContainerRef, OnInit, OnDestroy } from '@angular/core';
 import { JsonViewComponent } from './json-view/json-view.component'
 import { DeusModelService } from './model/deus-model.service'
 import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
@@ -8,6 +8,7 @@ import { ToastOptions } from 'ng2-toastr/ng2-toastr';
 import { NotificationService, DmeToastOptions  } from "./notification.service"
 import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from './data/preload-events'
 import { LogWindowComponent } from "./log-window/log-window.component"
+import { EventsListComponent } from "./events-list/events-list.component"
 
 @Component({
     selector: 'app-root',
@@ -16,10 +17,11 @@ import { LogWindowComponent } from "./log-window/log-window.component"
     providers: [ DeusModelService, NotificationService]
 })
 
-export class AppComponent {
+export class AppComponent implements OnInit,OnDestroy {
     @ViewChild('baseModelView') baseModelView : JsonViewComponent;
     @ViewChild('workModelView') workModelView : JsonViewComponent;
     @ViewChild('viewModelView') viewModelView : JsonViewComponent;
+    @ViewChild('eventsListView') eventsListView : EventsListComponent;
 
 
     preloadedEventsList = PRELOAD_EVENTS.map( (x) => { return { label: x.label, value: x.type }; } );
@@ -42,12 +44,18 @@ export class AppComponent {
                 private vcr: ViewContainerRef ) {}
 
     ngOnInit() {
+        this.deusModelService.onInit();
+
         this.notifyService.rootViewContainer = this.vcr;
 
         this.activeModelView = "base";
         this.modelViews['base'] = this.baseModelView;
         this.modelViews['work'] = this.workModelView;
         this.modelViews['view'] = this.viewModelView;
+    }
+
+    ngOnDestroy(){
+        this.deusModelService.onDestroy();
     }
 
     sentEvent(refresh: boolean): void {
@@ -75,7 +83,7 @@ export class AppComponent {
 
     private modCheckSubscription: Subscription = null;
 
-    connectViews(){
+    connectViews(): void{
         let count = 0;
 
         if(this.modCheckSubscription && !this.modCheckSubscription.closed){
@@ -87,7 +95,6 @@ export class AppComponent {
         let viewSource = this.deusModelService.getModel("view");
 
         this.baseModelView.dataSource = baseSource;
-
         this.workModelView.dataSource = workSource;
 
         this.modCheckSubscription = workSource.skip(1).take(1).delay(4000).subscribe(x => {
@@ -96,6 +103,12 @@ export class AppComponent {
                                     });
 
         this.viewModelView.dataSource = viewSource;
+
+        this.connectEventView();
+    }
+
+    connectEventView(): void{
+        this.eventsListView.dataSource = this.deusModelService.getEvents();
     }
 
     private jsonViewReloadFlag:boolean[] = [false, false, false];
@@ -113,6 +126,12 @@ export class AppComponent {
         this.baseModelView.dataSource = null;
         this.workModelView.dataSource = null;
         this.viewModelView.dataSource = null;
+
+        this.disconnectEventView();
+    }
+
+    disconnectEventView(){
+        this.eventsListView.dataSource = null;
     }
 
     onEventSelectChange(value: any): void{
@@ -122,5 +141,9 @@ export class AppComponent {
         }else{
             this.eventData = "{ }";
         }
+    }
+
+    testDBRequest(): void {
+        this.eventsListView.dataSource = this.deusModelService.getEvents();
     }
 }

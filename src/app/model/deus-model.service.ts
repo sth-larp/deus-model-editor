@@ -2,7 +2,19 @@ import { Injectable, Input } from '@angular/core';
 import { Observable, ConnectableObservable } from 'rxjs/Rx';
 import { Headers, Response, Request, Http, RequestOptions, RequestOptionsArgs } from '@angular/http';
 
+import * as PouchDB from 'pouchdb';
+import * as pouchDBFind from 'pouchdb-find';
+
+
 import { REFRESH_EVENT_NAME } from "../data/preload-events"
+
+export interface DeusEvent {
+        _id: string,
+        characterId: string,
+        timestamp : number,
+        eventType : string,
+        data : any
+};
 
 /**
  * Класс отвечающий за все операции с CouchDB и API касающиеся моделей и событий
@@ -15,21 +27,40 @@ export class DeusModelService {
 
     refreshEventName: string = REFRESH_EVENT_NAME;
 
-//Данные для передачи в запросах (заполняются извне)
+    //Данные для передачи в запросах (заполняются извне)
     @Input() charID: String = "";
     @Input() charPass: String = "";
 
-//Параметры для подключения
+    //Параметры для подключения
     private couchDbUrl = "http://dev.alice.digital:5984";
 
     private dbNames = {
         base: "models-dev2",
         work: "working-models-dev2",
-        view: "view-models-dev2"
+        view: "view-models-dev2",
+        events: "events-dev2"
     };
 
-    constructor(private http: Http) {}
+    private eventsDB: PouchDB = null;
 
+    constructor(private http: Http) { }
+
+    //У сервисов нет Lifetime Hooks поэтому эти будет вызывать головной компонент
+    onInit(): void {
+        this.eventsDB = new PouchDB(this.couchDbUrl + '/' + this.dbNames['events']);
+        PouchDB.plugin(pouchDBFind);
+
+        this.eventsDB.info().then((info) => {
+            console.log("Events Database opened!");
+            console.log(info);
+        });
+    }
+
+    onDestroy(): void {
+        if (this.eventsDB) {
+            this.eventsDB.close().then((x) => console.log("Events Database closed();"));
+        }
+    }
 
     /**
      * Отправка события персонажу.
@@ -59,21 +90,21 @@ export class DeusModelService {
             ]
         };
 
-        if(name != this.refreshEventName && refresh){
-            eventsList.events.push( {
-                            eventType: this.refreshEventName,
-                            timestamp: Date.now().valueOf(),
-                            characterId: this.charID,
-                            data: ""
-                    } );
+        if (name != this.refreshEventName && refresh) {
+            eventsList.events.push({
+                eventType: this.refreshEventName,
+                timestamp: Date.now().valueOf()+10,
+                characterId: this.charID,
+                data: ""
+            });
         }
 
         console.log("Send events: " + eventsList.events
-                                        .map( e => e.eventType )
-                                        .join(",")
-                                    );
+            .map(e => e.eventType)
+            .join(",")
+        );
 
-        let eventSource = this.http.post(url, JSON.stringify(eventsList), {headers: h});
+        let eventSource = this.http.post(url, JSON.stringify(eventsList), { headers: h });
         return eventSource;
     }
 
@@ -149,4 +180,58 @@ export class DeusModelService {
         return retObj;
     }
 
+    getEvents( pageSize: number = 50, maxTimestamp: number = 0 ): Observable<any> {
+        if (!this.charID) { return Observable.empty(); }
+
+        let selector = {
+                selector: { characterId: { $eq: this.charID } },
+                sort: [
+                            {characterId :"desc"},
+                            {timestamp :"desc"}
+                      ],
+                limit: pageSize
+            };
+
+        if( maxTimestamp != 0 ){
+            selector.selector['timestamp'] = { $lt : maxTimestamp };
+        }
+
+        return Observable.fromPromise(
+                            this.eventsDB.find( selector )
+                         )
+                        .map(
+                            (x:any) => { return x.docs; }
+                        );
+    }
+
+    /**
+     * Удаление всех событий для данного персонажа (ну или до 10К событий за раз)
+     *
+     * @memberof DeusModelService
+     */
+    clearEvents(): void {
+
+        let selector = {
+                selector:{ characterId: "9999" },
+                sort: [  {characterId :"desc"},
+                         {timestamp :"desc"} ],
+                limit: 10000
+            }
+
+        this.eventsDB.find( selector ).then( (result) => {
+            return this.eventsDB.bulkDocs(
+                        result.docs.map( (x) => {
+                                                return {
+                                                        _id: x._id,
+                                                        _rev: x._rev,
+                                                        _deleted : true,
+                                                        characterId : x.characterId,
+                                                        timestamp : x.timestamp,
+                                                        eventType : x.eventType,
+                                                        data : x.data
+                                                    };
+                                            } )
+                )
+        }).then((x) => { console.log(x); } )
+    }
 }

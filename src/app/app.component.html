@@ -78,11 +78,19 @@
                                 (click)="sentEvent(false)">
                                     Send Event
                             </button>
+                             <button type="button" class="btn btn-secondary" style="height: 3rem;"
+                                (click)="deusModelService.clearEvents()">
+                                    Clear events
+                            </button>
+                            <button type="button" class="btn btn-secondary" style="height: 3rem;"
+                                (click)="testDBRequest();">
+                                    DB Query
+                            </button>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-12 my-3">
-                            <dme-events-list></dme-events-list>
+                            <dme-events-list  #eventsListView></dme-events-list>
                         </div>
                     </div>
             </div>

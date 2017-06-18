@@ -7,7 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {DropdownModule} from 'primeng/primeng';
 import {ToastModule, ToastOptions} from 'ng2-toastr/ng2-toastr';
-import { DataTableModule  } from 'angular-2-data-table';
+import { DataTableModule } from 'angular-2-data-table';
 
 import { AppComponent } from './app.component';
 import { JsonViewComponent } from './json-view/json-view.component';
