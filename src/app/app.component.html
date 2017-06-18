@@ -15,13 +15,13 @@
                             (click)="loadModel();" >
                             Load Model
                     </button>
-                    <button type="button" class="btn btn-sm"  style="height: 3rem;"
+                    <!--<button type="button" class="btn btn-sm"  style="height: 3rem;"
                             [class.btn-success]="this.isAutoUpdate"
                             [disabled]="deusModelService.charID==''"
                             [class.btn-default]="!this.isAutoUpdate"
                             (click)="autoUpdateToogle()" >
                             Auto<br/>Reload
-                    </button>
+                    </button>-->
             </form>
         </div>
     </div>
@@ -40,40 +40,24 @@
             <div class="card-header dme-card-header">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" [class.active]="rightPaneType=='events'" (click)="rightPaneType='events'" href="#">Events</a>
+                        <a class="nav-link active" [class.active]="leftPaneType=='events'" (click)="leftPaneType='events'" href="#">Events</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" [class.active]="rightPaneType=='editor'" (click)="rightPaneType='editor'" href="#">Editor</a>
+                        <a class="nav-link" [class.active]="leftPaneType=='editor'" (click)="leftPaneType='editor'" href="#">Editor</a>
                     </li>
                 </ul>
             </div>
 
             <!--Управление событиями: посылка и очередь-->
-            <div class="card-block" [style.display]="rightPaneType=='events' ? 'block' : 'none'">
+            <div class="card-block" [style.display]="leftPaneType=='events' ? 'block' : 'none'">
                     <div class="row">
                         <div class="form-group col-md-12">
                             <label for="eventNameText">Event type</label>
-
-                            <select id="mdeEventSelector" class="form-control" data-plugin="mde-select2-element">
-                                <option *ngFor="let evt of preloadEvents" [value]="evt.type">{{evt.name}}</option>
-                            </select>
-
-                            <!--<div class="input-group">
-                                <input [(ngModel)]="eventName" type="text" class="form-control" id="eventNameText" aria-label="Event name">
-                                <div ngbDropdown class="input-group-btn">
-                                    <button type="button" class="btn btn-secondary" id="eventNameDropdownBtn" ngbDropdownToggle>Events</button>
-                                    <div class="dropdown-menu dropdown-menu-right" aria-labelledby="eventNameDropdownBtn">
-                                        <!--Список готовых событий-->
-                                        <!--<a *ngFor="let evt of preloadEvents"  class="dropdown-item"
-                                                             (click)="eventName = evt.type; eventData=evt.template" href="#">{{evt.name}}</a>-->
-
-                                        <!--Событие Refresh-->
-                                        <!--<div role="separator" class="dropdown-divider"></div>
-                                        <a class="dropdown-item" (click)="eventName = this.deusModelService.refreshEventName; eventData=''"
-                                                href="#">Refresh Event</a>-->
-                                    <!--</div>
-                                </div>
-                            </div>-->
+                            <p-dropdown [options]="preloadedEventsList" [(ngModel)]="selectedEvent" [autoWidth]="false" [filter]="true" filterBy='label,value'
+                                        [editable]="testAttr"
+                                        [dataKey]='type'
+                                        (onChange)="onEventSelectChange($event.value)">
+                            </p-dropdown>
                         </div>
                     </div>
                     <div class="row">
@@ -96,11 +80,16 @@
                             </button>
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-12 my-3">
+                            <h4>Events Table</h4>
+                        </div>
+                    </div>
             </div>
             <!--Finish: Управление событиями: посылка и очередь-->
 
             <!--Редактор модели -->
-            <div class="card-block" [style.display]="rightPaneType=='editor' ? 'block' : 'none'">
+            <div class="card-block" [style.display]="leftPaneType=='editor' ? 'block' : 'none'">
                 <div>
                 </div>
             </div>
@@ -115,26 +104,48 @@
             <div class="card-header dme-card-header">
                 <ul class="nav nav-tabs card-header-tabs">
                     <li class="nav-item">
-                        <a class="nav-link active" [class.active]="modelViewType=='base'" (click)="modelViewType='base'; loadModel();" href="#">Base Model</a>
+                        <a class="nav-link" [class.active]="activeModelView=='base'" (click)="activeModelView='base';" href="#">
+                            Base Model
+                            <span *ngIf="modelViews.base.isConnected" class="ml-2" style="display:inline; font-size: 13pt;color: green;"><i class="fa fa-refresh"></i></span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" [class.active]="modelViewType=='work'" (click)="modelViewType='work'; loadModel();" href="#">Work Model</a>
+                        <a class="nav-link" [class.active]="activeModelView=='work'" (click)="activeModelView='work';" href="#">
+                            Work Model
+                            <span *ngIf="modelViews.work.isConnected" class="ml-2" style="display:inline; font-size: 13pt;color: green;">
+                                <i class="fa fa-refresh">
+                            </i></span>
+                        </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" [class.active]="modelViewType=='view'" (click)="modelViewType='view'; loadModel();" href="#">View Model</a>
+                        <a class="nav-link" [class.active]="activeModelView=='view'" (click)="activeModelView='view';" href="#">
+                            View Model
+                            <span *ngIf="modelViews.view.isConnected" class="ml-2" style="display:inline; font-size: 13pt;color: green;">
+                                <i class="fa fa-refresh"></i>
+                            </span>
+                        </a>
                     </li>
                 </ul>
                 <div style="position: absolute; top: 0.5rem; right: 2rem; ">
-                    <button type="button" class="btn btn-outline-primary mx-3 waves-effect waves-light dmeBntJsonCollapse" (click)="jsonView.showAll()">
-                        <i class="ion-plus"></i>
+                    <button type="button" class="btn btn-outline-primary mx-3 waves-effect waves-light dmeBntJsonCollapse"
+                         (click)="modelViews[activeModelView].showAll()">
+                             <i class="ion-plus"></i>
                     </button>
-                    <button type="button" class="btn btn-outline-primary waves-effect waves-light dmeBntJsonCollapse" (click)="jsonView.collapseAll()">
-                        <i class="ion-minus"></i>
+
+                    <button type="button" class="btn btn-outline-primary waves-effect waves-light dmeBntJsonCollapse"
+                         (click)="modelViews[activeModelView].collapseAll()">
+                            <i class="ion-minus"></i>
                     </button>
                 </div>
             </div>
-            <div class="card-block">
-                <dme-json-view></dme-json-view>
+            <div class="card-block" [class.dmeHidden]="activeModelView!='base'">
+                <dme-json-view #baseModelView viewName="Base model view" (onLoad)="onJsonViewReload(0)"></dme-json-view>
+            </div>
+            <div class="card-block" [class.dmeHidden]="activeModelView!='work'">
+                <dme-json-view #workModelView viewName="Work model view" (onLoad)="onJsonViewReload(1)"></dme-json-view>
+            </div>
+            <div class="card-block" [class.dmeHidden]="activeModelView!='view'">
+                <dme-json-view #viewModelView viewName="ViewModel view" (onLoad)="onJsonViewReload(2)"></dme-json-view>
             </div>
         </div>
     </div>
@@ -143,6 +154,5 @@
 </div>
 
 </div>
-<!--<ngb-alert class="fixed-bottom" [@alertState]="alertState" type="success" [dismissible]="true">{{alertText}}</ngb-alert>-->
 
-<dme-log-window></dme-log-window>
+<!--<dme-log-window></dme-log-window>-->

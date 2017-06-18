@@ -1,0 +1,33 @@
+/*Fix for p-dropdown styles*/
+
+.form-group .ui-widget{
+    font-family: sans-serif;
+    font-size: 1rem;
+    display: block;
+    width: 100%;
+    border: 1px solid rgba(0, 0, 0,.15);
+    color: #464a4c;
+}
+
+
+.form-group .ui-widget .ui-dropdown-label {
+    padding: .5rem 2rem .5rem .75rem;
+    font-family: sans-serif;
+    font-size: 1rem;
+}
+
+.form-group .ui-dropdown .ui-dropdown-trigger{
+    width: 2rem;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.form-group .ui-dropdown .ui-dropdown-trigger .fa{
+    font-size: 12pt;
+    margin-top: .5rem;
+    margin-left: -.1rem;
+}
+
+.form-group .ui-dropdown-filter-container{
+    width: 100%;
+}

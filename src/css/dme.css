@@ -103,3 +103,13 @@
     border-left: 1px solid lightgray;
     opacity: 0.7;
 }
+
+input:focus, textarea:focus {
+    box-shadow: 0px 0px 5px #1f89ce;
+}
+
+.reload-icon {
+    display: inline-block;
+    font-size: 15pt;
+    color: green;
+}

@@ -1,18 +1,25 @@
 import { Injectable, Input } from '@angular/core';
-import { DeusModel } from './DeusModel'
 import { Observable, ConnectableObservable } from 'rxjs/Rx';
 import { Headers, Response, Request, Http, RequestOptions, RequestOptionsArgs } from '@angular/http';
 
 import { REFRESH_EVENT_NAME } from "../data/preload-events"
 
+/**
+ * Класс отвечающий за все операции с CouchDB и API касающиеся моделей и событий
+ *
+ * @export
+ * @class DeusModelService
+ */
 @Injectable()
 export class DeusModelService {
 
     refreshEventName: string = REFRESH_EVENT_NAME;
 
+//Данные для передачи в запросах (заполняются извне)
     @Input() charID: String = "";
     @Input() charPass: String = "";
 
+//Параметры для подключения
     private couchDbUrl = "http://dev.alice.digital:5984";
 
     private dbNames = {
@@ -24,6 +31,19 @@ export class DeusModelService {
     constructor(private http: Http) {}
 
 
+    /**
+     * Отправка события персонажу.
+     *
+     * Если событие само не является Refresh'ем и установлен параметр refresh
+     * то отправить два события сразу: исходное + Refresh
+     *
+     * @param {string} name
+     * @param {string} evtData
+     * @param {boolean} refresh
+     * @returns {Observable<Response>}
+     *
+     * @memberof DeusModelService
+     */
     sentEvent(name: string, evtData: string, refresh: boolean): Observable<Response> {
         let url = "http://alice.digital:8157/events/" + this.charID;
         let h = new Headers({ 'Content-Type': 'application/json' });
@@ -57,7 +77,18 @@ export class DeusModelService {
         return eventSource;
     }
 
-    getModel(type: string): Observable<Response> {
+
+    /**
+     * Получить модель (точнее Observable для ее загрузку)
+     * Фактически при подключении хотя бы одного получателя, просиходит загрузка данных
+     * Данные обновляются раз в 30 секунд
+     *
+     * @param {string} type Тип модели: 'base', 'work', 'view'
+     * @returns {Observable<any>}
+     *
+     * @memberof DeusModelService
+     */
+    getModel(type: string): Observable<any> {
         if (!this.dbNames.hasOwnProperty(type)) { Observable.empty(); }
         if (!this.charID) { return Observable.empty(); }
 
@@ -68,8 +99,7 @@ export class DeusModelService {
 
         let lastRev = "";
 
-        //Вернуть комбинацию из источника с обновление раз в 10 сек и принудительного
-        return Observable.timer(0, 10000)
+        return Observable.timer(0, 30000)
             .flatMap(x => this.http.get(url))
             .map(response => response.json())
             .filter((json, i) => {
@@ -77,7 +107,7 @@ export class DeusModelService {
                     lastRev = json._rev;
                     return true;
                 }
-                console.log("Model not changed!");
+                console.log(`DeusModelService: model '${type}' loaded, but not changed!`);
                 return false;
             })
             .map(json => this.processModelJson(json))

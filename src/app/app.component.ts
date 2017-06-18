@@ -1,88 +1,126 @@
-import { Component, Input, ViewChild, ChangeDetectorRef } from '@angular/core';
-import { JsonViewComponent, JsonTextLine } from './json-view/json-view.component'
+import { Component, Input, ViewChild, ChangeDetectorRef, ViewContainerRef } from '@angular/core';
+import { JsonViewComponent } from './json-view/json-view.component'
 import { DeusModelService } from './model/deus-model.service'
 import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
 import { NgbDropdown, NgbDropdownConfig } from '@ng-bootstrap/ng-bootstrap';
-import { trigger, state, style, animate, transition } from '@angular/animations';
+import { ToastOptions } from 'ng2-toastr/ng2-toastr';
 
-
+import { NotificationService, DmeToastOptions  } from "./notification.service"
 import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from './data/preload-events'
 import { LogWindowComponent } from "./log-window/log-window.component"
-
-declare var jquery:any;
-declare var $ :any;
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
-    providers: [DeusModelService],
-    animations: [
-        trigger('alertState',[
-            state( 'hidden',style({
-                opacity: 0
-            })),
-            state( 'visible',style({
-                opacity: 1
-            })),
-            transition('hidden => visible', animate('300ms')),
-            transition('visible => hidden', animate('300ms'))
-        ])
-    ]
+    providers: [ DeusModelService, NotificationService]
 })
 
 export class AppComponent {
-    @ViewChild(JsonViewComponent) jsonView : JsonViewComponent;
+    @ViewChild('baseModelView') baseModelView : JsonViewComponent;
+    @ViewChild('workModelView') workModelView : JsonViewComponent;
+    @ViewChild('viewModelView') viewModelView : JsonViewComponent;
 
-    @Input() eventName: string = REFRESH_EVENT_NAME;
-    @Input() eventData: string = "";
+
+    preloadedEventsList = PRELOAD_EVENTS.map( (x) => { return { label: x.label, value: x.type }; } );
+
+    @Input() selectedEvent: any = this.preloadedEventsList[0].value;
+    @Input() eventData: string = PRELOAD_EVENTS[0].template; ;
 
     title = 'Deus 2017 Model Editor';
 
-    preloadEvents = PRELOAD_EVENTS;
-
-    isAutoUpdate: boolean = false;
     subscription: any = null;
 
-    modelViewType: string = "base";
+    activeModelView: string = "base";
 
-    rightPaneType: string = "events";
+    leftPaneType: string = "events";
 
-    constructor(private deusModelService: DeusModelService, private chageDetectRef: ChangeDetectorRef) {
-        //Observable.from([1]).delay(10000).subscribe(x => { this.alertState = "hidden"; } )
-        // Observable.timer(0, 1000).subscribe(x => {
-        //         if(this.alertTimeout > 0){   }
-        //     }
-        // )
-    }
+    modelViews: any = {};
+
+    constructor(private deusModelService: DeusModelService,
+                private notifyService: NotificationService,
+                private vcr: ViewContainerRef ) {}
 
     ngOnInit() {
-        $('#mdeEventSelector').on("change", (e) => this.selectEventName(e) );
+        this.notifyService.rootViewContainer = this.vcr;
+
+        this.activeModelView = "base";
+        this.modelViews['base'] = this.baseModelView;
+        this.modelViews['work'] = this.workModelView;
+        this.modelViews['view'] = this.viewModelView;
     }
 
     sentEvent(refresh: boolean): void {
-        this.deusModelService.sentEvent(this.eventName, this.eventData, refresh)
-            .subscribe( response => console.log(`Sent result: ${response.statusText}`) );
+        this.deusModelService.sentEvent(this.selectedEvent, this.eventData, refresh)
+            .subscribe( response => {
+                let m = `Successfully sent event: ${this.selectedEvent}\n`
+
+                m+= `Result: ${response.status} ${response.statusText}`;
+                this.notifyService.success(m, "Event sent!")
+
+                this.connectViews();
+            });
     }
 
     loadModel(): void {
-        this.jsonView.subscribeModel(this.modelViewType);
-        this.isAutoUpdate = true;
+        this.connectViews();
     }
 
-    autoUpdateToogle(): void{
-        if(this.isAutoUpdate){
-            this.jsonView.unsubscribeModel();
-            this.isAutoUpdate = false;
-        }else{
-            this.jsonView.subscribeModel(this.modelViewType);
-            this.isAutoUpdate = true;
+    notifyWhenLoaded(count: number): number{
+        if(count < 2) { return count+1; }
+
+        this.notifyService.success("All model views reloaded!")
+        return 0;
+    }
+
+    private modCheckSubscription: Subscription = null;
+
+    connectViews(){
+        let count = 0;
+
+        if(this.modCheckSubscription && !this.modCheckSubscription.closed){
+            this.modCheckSubscription.unsubscribe();
+        }
+
+        let baseSource = this.deusModelService.getModel("base");
+        let workSource = this.deusModelService.getModel("work");
+        let viewSource = this.deusModelService.getModel("view");
+
+        this.baseModelView.dataSource = baseSource;
+
+        this.workModelView.dataSource = workSource;
+
+        this.modCheckSubscription = workSource.skip(1).take(1).delay(4000).subscribe(x => {
+                                        this.notifyService.warning("Model changed! Stop auto-reloading!")
+                                        this.disconnectViews();
+                                    });
+
+        this.viewModelView.dataSource = viewSource;
+    }
+
+    private jsonViewReloadFlag:boolean[] = [false, false, false];
+
+    onJsonViewReload(index: number){
+        this.jsonViewReloadFlag[index] = true;
+
+        if(this.jsonViewReloadFlag.every(x => x)){
+            this.notifyService.success("All model views reloaded!")
+            this.jsonViewReloadFlag = [false, false, false];
         }
     }
 
-    selectEventName( event: any ):void {
-        this.eventName = $('#mdeEventSelector').prop("value");
-        this.eventData = this.preloadEvents.find( (x) => x.type == this.eventName).template;
-        setTimeout(() => this.chageDetectRef.detectChanges(), 100);
+    disconnectViews(){
+        this.baseModelView.dataSource = null;
+        this.workModelView.dataSource = null;
+        this.viewModelView.dataSource = null;
+    }
+
+    onEventSelectChange(value: any): void{
+        let event = PRELOAD_EVENTS.find(x => x.type == value);
+        if(event){
+            this.eventData = event.template;
+        }else{
+            this.eventData = "{ }";
+        }
     }
 }

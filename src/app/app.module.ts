@@ -5,17 +5,19 @@ import { HttpModule, JsonpModule } from '@angular/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import {DropdownModule} from 'primeng/primeng';
+import {ToastModule, ToastOptions} from 'ng2-toastr/ng2-toastr';
 
 import { AppComponent } from './app.component';
 import { JsonViewComponent } from './json-view/json-view.component';
-import { JsonLineShowComponent } from './json-line-show/json-line-show.component';
 import { LogWindowComponent } from './log-window/log-window.component';
+import { DmeToastOptions  } from "./notification.service"
+
 
 @NgModule({
   declarations: [
     AppComponent,
     JsonViewComponent,
-    JsonLineShowComponent,
     LogWindowComponent
   ],
   imports: [
@@ -25,9 +27,13 @@ import { LogWindowComponent } from './log-window/log-window.component';
     ReactiveFormsModule,
     JsonpModule,
     HttpModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    DropdownModule,
+    ToastModule.forRoot()
   ],
-  providers: [],
+  providers: [
+    {provide: ToastOptions, useClass: DmeToastOptions},
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
