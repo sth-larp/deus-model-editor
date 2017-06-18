@@ -1,0 +1,35 @@
+<div class="w-100">
+     <data-table id="persons-grid"
+        [headerTitle]="'Model Events for '+ deusModelService.charID"
+        [items]="items"
+
+        [pagination]="false"
+        [indexColumn]="true"
+        [indexColumnHeader]="'#'"
+        [selectColumn]="true"
+        [multiSelect]="true"
+        [selectOnRowClick]="true"
+     >
+
+        <data-table-column
+            [property]="'name'"
+            [header]="'Name'"
+            [sortable]="false"
+            [resizable]="true">
+        </data-table-column>
+
+        <data-table-column
+            [property]="'data1'"
+            [header]="'Data1'"
+            [sortable]="false"
+            [resizable]="true">
+        </data-table-column>
+
+        <data-table-column
+            [property]="'data2'"
+            [header]="'Data2'"
+            [sortable]="false"
+            [resizable]="true">
+        </data-table-column>
+     </data-table>
+</div>
