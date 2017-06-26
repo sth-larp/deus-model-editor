@@ -5,8 +5,9 @@ import {
 import { DataTableColumn } from './column.component';
 import { DataTableRow } from './row.component';
 import { DataTableParams } from './types';
-import { RowCallback } from './types';
-import { DataTableTranslations, defaultTranslations } from './types';
+import { RowCallback } from './Interfaces/RowCallback';
+import { defaultTranslations } from './types';
+import { DataTableTranslations } from './Interfaces/DataTableTranslations';
 import { drag } from '../utils/drag';
 import { TABLE_TEMPLATE } from './table.template';
 import { TABLE_STYLE } from "./table.style";

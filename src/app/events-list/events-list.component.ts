@@ -14,24 +14,6 @@ import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from '../data/preload-events';
 })
 export class EventsListComponent implements OnInit {
 
-    items = [
-        {
-            name : "Name1",
-            data1 : "Data1",
-            data2 : "Data2"
-        },
-        {
-            name : "Name2",
-            data1 : "Data21",
-            data2 : "Data22"
-        },
-        {
-            name : "Name3",
-            data1 : "Data31",
-            data2 : "Data32"
-        }
-    ];
-
     private _eventsList: DeusEvent[] = []
 
     //DataSource

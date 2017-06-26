@@ -196,12 +196,43 @@ export class DeusModelService {
             selector.selector['timestamp'] = { $lt : maxTimestamp };
         }
 
-        return Observable.fromPromise(
-                            this.eventsDB.find( selector )
-                         )
-                        .map(
-                            (x:any) => { return x.docs; }
-                        );
+        // return Observable.fromPromise(
+        //                     this.eventsDB.find( selector )
+        //                  )
+        //                 .map(
+        //                     (x:any) => { return x.docs; }
+        //                 );
+
+
+        let lastTimestamp: number = 0;
+        let lastSize: number = 0;
+
+        return Observable.timer(0, 30000)
+            .flatMap(x => this.eventsDB.find(selector))
+            .map((x:any) => { return x.docs; })
+            .filter((docs, i) => {
+                if(lastTimestamp == 0){
+
+                    if(docs.length == 0) {
+                         return false;
+                    } else {
+                        lastTimestamp = docs[0].timestamp;
+                        return true;
+                    }
+                }else{
+                    if(docs.length == 0) {
+                        lastTimestamp = 0;
+                        return true;
+                    }else if(lastTimestamp != docs[0].timestamp){
+                        lastTimestamp = docs[0].timestamp;
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }
+            })
+            .share();
+
     }
 
     /**
@@ -212,7 +243,7 @@ export class DeusModelService {
     clearEvents(): void {
 
         let selector = {
-                selector:{ characterId: "9999" },
+                selector:{ characterId: this.charID },
                 sort: [  {characterId :"desc"},
                          {timestamp :"desc"} ],
                 limit: 10000

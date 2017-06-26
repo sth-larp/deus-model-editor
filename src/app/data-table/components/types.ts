@@ -1,21 +1,9 @@
 import { DataTableRow } from './row.component';
 import { DataTableColumn } from './column.component';
-
-
-export type RowCallback = (item: any, row: DataTableRow, index: number) => string;
-
-export type CellCallback = (item: any, row: DataTableRow, column: DataTableColumn, index: number) => string;
+import { DataTableTranslations } from './Interfaces/DataTableTranslations';
 
 // export type HeaderCallback = (column: DataTableColumn) => string;
 
-
-export interface DataTableTranslations {
-    indexColumn: string;
-    selectColumn: string;
-    expandColumn: string;
-    paginationLimit: string;
-    paginationRange: string;
-}
 
 export var defaultTranslations = <DataTableTranslations>{
     indexColumn: 'index',
