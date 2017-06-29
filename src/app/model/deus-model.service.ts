@@ -5,16 +5,9 @@ import { Headers, Response, Request, Http, RequestOptions, RequestOptionsArgs } 
 import * as PouchDB from 'pouchdb';
 import * as pouchDBFind from 'pouchdb-find';
 
-
 import { REFRESH_EVENT_NAME } from "../data/preload-events"
+import { DeusEvent, IDeusEvent } from "./deus-events";
 
-export interface DeusEvent {
-        _id: string,
-        characterId: string,
-        timestamp : number,
-        eventType : string,
-        data : any
-};
 
 /**
  * Класс отвечающий за все операции с CouchDB и API касающиеся моделей и событий
@@ -28,8 +21,8 @@ export class DeusModelService {
     refreshEventName: string = REFRESH_EVENT_NAME;
 
     //Данные для передачи в запросах (заполняются извне)
-    @Input() charID: String = "";
-    @Input() charPass: String = "";
+    @Input() charID: string = "";
+    @Input() charPass: string = "";
 
     //Параметры для подключения
     private couchDbUrl = "http://dev.alice.digital:5984";
@@ -75,37 +68,15 @@ export class DeusModelService {
      *
      * @memberof DeusModelService
      */
-    sentEvent(name: string, evtData: string, refresh: boolean): Observable<Response> {
-        let url = "http://alice.digital:8157/events/" + this.charID;
-        let h = new Headers({ 'Content-Type': 'application/json' });
+    sentEvent(name: string, evtData: string, refresh: boolean): Observable<Response> {;
+        //let h = new Headers({ 'Content-Type': 'application/json' });
 
-        let eventsList = {
-            "events": [
-                {
-                    eventType: name,
-                    timestamp: Date.now().valueOf(),
-                    characterId: this.charID,
-                    data: evtData
-                }
-            ]
-        };
+        let events: Array<DeusEvent> = [ new DeusEvent(this.charID, name, evtData) ];
+        if (name != this.refreshEventName && refresh) { events.push(DeusEvent.getRefreshEvent(this.charID)); }
 
-        if (name != this.refreshEventName && refresh) {
-            eventsList.events.push({
-                eventType: this.refreshEventName,
-                timestamp: Date.now().valueOf()+10,
-                characterId: this.charID,
-                data: ""
-            });
-        }
+        console.log("Send events: " + events.map(e => e.eventType).join(","));
 
-        console.log("Send events: " + eventsList.events
-            .map(e => e.eventType)
-            .join(",")
-        );
-
-        let eventSource = this.http.post(url, JSON.stringify(eventsList), { headers: h });
-        return eventSource;
+        return Observable.from(this.eventsDB.bulkDocs(events));
     }
 
 
@@ -180,7 +151,7 @@ export class DeusModelService {
         return retObj;
     }
 
-    getEvents( pageSize: number = 50, maxTimestamp: number = 0 ): Observable<any> {
+    getEvents( pageSize: number = 100, maxTimestamp: number = 0 ): Observable<any> {
         if (!this.charID) { return Observable.empty(); }
 
         let selector = {
@@ -196,23 +167,14 @@ export class DeusModelService {
             selector.selector['timestamp'] = { $lt : maxTimestamp };
         }
 
-        // return Observable.fromPromise(
-        //                     this.eventsDB.find( selector )
-        //                  )
-        //                 .map(
-        //                     (x:any) => { return x.docs; }
-        //                 );
-
-
         let lastTimestamp: number = 0;
         let lastSize: number = 0;
 
         return Observable.timer(0, 30000)
             .flatMap(x => this.eventsDB.find(selector))
-            .map((x:any) => { return x.docs; })
+            .map((x:any) => x.docs )
             .filter((docs, i) => {
                 if(lastTimestamp == 0){
-
                     if(docs.length == 0) {
                          return false;
                     } else {
@@ -231,6 +193,7 @@ export class DeusModelService {
                     }
                 }
             })
+            .map( (x:Array<IDeusEvent>) => x.map( (e) => DeusEvent.fromEvent(e) ) )
             .share();
 
     }

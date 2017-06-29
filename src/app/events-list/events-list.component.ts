@@ -1,5 +1,6 @@
 import { Component, Input, ViewChild, OnInit} from '@angular/core';
-import { DeusModelService, DeusEvent } from '../model/deus-model.service'
+import { DeusModelService } from '../model/deus-model.service';
+import { IDeusEvent, DeusEvent } from '../model/deus-events';
 import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
 
 import { NotificationService } from "../notification.service";
@@ -14,7 +15,7 @@ import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from '../data/preload-events';
 })
 export class EventsListComponent implements OnInit {
 
-    private _eventsList: DeusEvent[] = []
+    private _eventsList: IDeusEvent[] = []
 
     //DataSource
     private subscription: Subscription = null;
@@ -37,12 +38,14 @@ export class EventsListComponent implements OnInit {
 
         if(this._dataSource){
             //Подписаться на данные
-            this.subscription = this.dataSource.subscribe( (docs) => {
+            this._eventsList = []
+            this.subscription = this.dataSource.subscribe( (docs: DeusEvent[]) => {
                                                     this._eventsList=docs;
-                                                    console.log(`EventsListComponent: Data lodaded!`);
+                                                    this.notifyService.success("Events data loaded!");
                                                 },
                                                 (error) => {
-                                                    this.notifyService.error(`EventsListComponent: error loading data!`)
+                                                    this.notifyService.error( `EventsListComponent: error while loading events!\nError: ${error}`,
+                                                                              "Error with loading events data!" );
                                                 }
                                             );
 

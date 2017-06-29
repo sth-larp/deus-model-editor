@@ -61,12 +61,11 @@ export class AppComponent implements OnInit,OnDestroy {
     sentEvent(refresh: boolean): void {
         this.deusModelService.sentEvent(this.selectedEvent, this.eventData, refresh)
             .subscribe( response => {
-                let m = `Successfully sent event: ${this.selectedEvent}\n`
-
-                m+= `Result: ${response.status} ${response.statusText}`;
-                this.notifyService.success(m, "Event sent!")
-
+                this.notifyService.success(`Successfully sent event: ${this.selectedEvent}`, "Event sent!")
                 this.connectViews();
+            },
+            error => {
+                this.notifyService.error(`Error while sending event: ${this.selectedEvent}\nError: ${error}`, "Event sent error!")
             });
     }
 
