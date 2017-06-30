@@ -18,7 +18,6 @@ export class JsonViewComponent implements OnInit {
 
 //DataSource
     private subscription: Subscription = null;
-    private _dataSource: Observable<any> = null;
 
 /**
  * Источник данных для показа (входной параметр компонента)
@@ -31,33 +30,28 @@ export class JsonViewComponent implements OnInit {
 @Input()
     set dataSource(ds: Observable<any>){
         //Отключить старую подписку, если была
-        if(this.subscription && !this.subscription.closed){
+        if(this.subscription){
             this.subscription.unsubscribe();
+            this.subscription = null;
             console.log(`JsonViewComponent (${this.viewName}): unsubscribed from data source`);
         }
 
-        this._dataSource = ds;
-
-        if(this._dataSource){
+        if(ds){
             //Подписаться на данные
-            this.subscription = this.dataSource.map( (obj) => PrepareViewData.process(obj) )
-                                                .subscribe( (lines) => {
-                                                                this.textModelLines = lines;
-                                                                this.collapseAll();
-                                                                console.log(`JsonViewComponent (${this.viewName}): Model reloaded!`);
-                                                                this.onLoad.emit(null);
-                                                            },
-                                                            (error) => {
-                                                                this.notifyService.error(`JsonViewComponent (${this.viewName}): error loading model!`)
-                                                            }
-                                                  );
+            this.subscription = ds.map( (obj) => PrepareViewData.process(obj) )
+                                    .subscribe( (lines) => {
+                                                    this.textModelLines = lines;
+                                                    this.collapseAll();
+                                                    console.log(`JsonViewComponent (${this.viewName}): Model reloaded!`);
+                                                    this.onLoad.emit(null);
+                                                },
+                                                (error) => {
+                                                    this.notifyService.error(`JsonViewComponent (${this.viewName}): error loading model!`)
+                                                }
+                                        );
 
             console.log(`JsonViewComponent (${this.viewName}): subscribed to new data source`);
         }
-    }
-
-    get dataSource():Observable<any>{
-        return this._dataSource;
     }
 
 @Output() onLoad: EventEmitter<any> = new EventEmitter();

@@ -1,12 +1,22 @@
 import { Injectable, Input } from '@angular/core';
-import { Observable, ConnectableObservable } from 'rxjs/Rx';
+import { Observable, ConnectableObservable, BehaviorSubject } from 'rxjs/Rx';
 import { Headers, Response, Request, Http, RequestOptions, RequestOptionsArgs } from '@angular/http';
+import { NotificationService } from '../notification.service'
 
 import * as PouchDB from 'pouchdb';
 import * as pouchDBFind from 'pouchdb-find';
 
 import { REFRESH_EVENT_NAME } from "../data/preload-events"
 import { DeusEvent, IDeusEvent } from "./deus-events";
+import { DeusModel } from './interfaces/model'
+
+export const dbAliases = ["base", "work", "view", "events"];
+
+export interface DeusModelServiceConfig{
+    couchDbUrl: string;
+    db: { [index: string]: string };
+    characterID: string;
+}
 
 
 /**
@@ -20,100 +30,116 @@ export class DeusModelService {
 
     refreshEventName: string = REFRESH_EVENT_NAME;
 
-    //Данные для передачи в запросах (заполняются извне)
-    @Input() charID: string = "";
-    @Input() charPass: string = "";
+    //==================================================================================================
+    // Новая модель конфигурации
+    //==================================================================================================
 
-    //Параметры для подключения
-    private couchDbUrl = "http://dev.alice.digital:5984";
+    private refreshTimeout:number = 10000;
 
-    private dbNames = {
-        base: "models-dev2",
-        work: "working-models-dev2",
-        view: "view-models-dev2",
-        events: "events-dev2"
-    };
-
-    private eventsDB: PouchDB = null;
-
-    constructor(private http: Http) { }
-
-    //У сервисов нет Lifetime Hooks поэтому эти будет вызывать головной компонент
-    onInit(): void {
-        this.eventsDB = new PouchDB(this.couchDbUrl + '/' + this.dbNames['events']);
-        PouchDB.plugin(pouchDBFind);
-
-        this.eventsDB.info().then((info) => {
-            console.log("Events Database opened!");
-            console.log(info);
-        });
+    private defaultConfig: DeusModelServiceConfig = {
+        couchDbUrl : "http://dev.alice.digital:5984/",
+        db : {
+            work : "working-models-dev2",
+            base : "models-dev2",
+            view : "view-models-dev2",
+            events : "events-dev2"
+        },
+        characterID : ""
     }
 
-    onDestroy(): void {
-        if (this.eventsDB) {
-            this.eventsDB.close().then((x) => console.log("Events Database closed();"));
+    //Текущая конфигурация
+    private _config: DeusModelServiceConfig = null;
+
+    //Источник событий при изменении
+    public configChanges: BehaviorSubject<DeusModelServiceConfig> = new BehaviorSubject(this.config);
+
+    //Properties связанные с конфигом (конфиг целиком и отдельно characterID)
+    public set config(c: DeusModelServiceConfig){
+        this._config = c;
+
+        console.log("Set config");
+        this.openDatabases();
+
+        this.configChanges.next( this.config )
+    }
+
+    public get config():DeusModelServiceConfig{
+        return Object.assign({}, this._config);
+    }
+
+    public set characterID(c: string){
+        this._config.characterID = c;
+        this.configChanges.next( this.config );
+    }
+
+    public get characterID(): string{
+        return this._config.characterID;
+    }
+
+    //Источник событий с частотой refreshTimeout (содержимое - актуальный конфиг)
+    public refreshedConfigSource: Observable<any> = null;
+
+    //Текущие подключения в БД, изменяются, когда меняется конфиг
+    private dbConnections : { [index: string]: PouchDB } = {};
+
+
+    //Конструктор
+    constructor(private http: Http, private notifyService: NotificationService ) { }
+
+    //Метод для получения источника данных из БД
+    //На данный момент - каждый источник это один запрос.
+    //Источник передает обновление раз в refreshTimeout ms
+    public getModelSource(db: string): Observable<DeusModel> {
+         return this.refreshedConfigSource
+                        .flatMap( (c:DeusModelServiceConfig) => {
+                                return this.dbConnections[db].get(c.characterID);
+                        })
+                        .distinctUntilChanged( DeusModelService._modelCompare )
+                        .map(model => this.processModelJson(model));
+    }
+
+    //Вспомогательные функции
+    private static _modelCompare(m1: DeusModel, m2: DeusModel): boolean {
+        return (m1._rev == m2._rev)&&(m1._id == m2._id);
+    }
+
+    private _getRefreshedConfigSource(): Observable<DeusModelServiceConfig> {
+        return this.configChanges.combineLatest(
+                            Observable.timer(0, this.refreshTimeout),
+                            (c:DeusModelServiceConfig, t:number) => { return c; }
+                        )
+                        .filter((c:DeusModelServiceConfig) => c.characterID != "")
+                        .share();
+    }
+
+    private openDatabases(): void{
+        this.closeDatabases();
+
+        for(let db of dbAliases){
+            console.log(`Open database ${db}, url: ${this._config.couchDbUrl + this._config.db[db]}`);
+            this.dbConnections[db] =  new PouchDB(this._config.couchDbUrl + this._config.db[db]);
         }
     }
 
-    /**
-     * Отправка события персонажу.
-     *
-     * Если событие само не является Refresh'ем и установлен параметр refresh
-     * то отправить два события сразу: исходное + Refresh
-     *
-     * @param {string} name
-     * @param {string} evtData
-     * @param {boolean} refresh
-     * @returns {Observable<Response>}
-     *
-     * @memberof DeusModelService
-     */
-    sentEvent(name: string, evtData: string, refresh: boolean): Observable<Response> {;
-        //let h = new Headers({ 'Content-Type': 'application/json' });
-
-        let events: Array<DeusEvent> = [ new DeusEvent(this.charID, name, evtData) ];
-        if (name != this.refreshEventName && refresh) { events.push(DeusEvent.getRefreshEvent(this.charID)); }
-
-        console.log("Send events: " + events.map(e => e.eventType).join(","));
-
-        return Observable.from(this.eventsDB.bulkDocs(events));
+    private closeDatabases(): void {
+        for(let db of dbAliases){
+            if(this.dbConnections[db]){
+                this.dbConnections[db].close();
+            }
+        }
     }
 
+    //У сервисов нет Lifetime Hooks поэтому эти будет вызывать головной компонент
+    onInit(): void {
+        PouchDB.plugin(pouchDBFind);
 
-    /**
-     * Получить модель (точнее Observable для ее загрузку)
-     * Фактически при подключении хотя бы одного получателя, просиходит загрузка данных
-     * Данные обновляются раз в 30 секунд
-     *
-     * @param {string} type Тип модели: 'base', 'work', 'view'
-     * @returns {Observable<any>}
-     *
-     * @memberof DeusModelService
-     */
-    getModel(type: string): Observable<any> {
-        if (!this.dbNames.hasOwnProperty(type)) { Observable.empty(); }
-        if (!this.charID) { return Observable.empty(); }
+        this.config = this.defaultConfig;
 
-        let url = this.couchDbUrl + "/" + this.dbNames[type] + "/" + this.charID;
+        this.refreshedConfigSource = this._getRefreshedConfigSource();
+    }
 
-        let h = new Headers([{ 'Content-Type': 'application/json' }, { 'Accept': 'application/json' }]);
-        let options = new RequestOptions({ headers: h });
-
-        let lastRev = "";
-
-        return Observable.timer(0, 30000)
-            .flatMap(x => this.http.get(url))
-            .map(response => response.json())
-            .filter((json, i) => {
-                if (json._rev != lastRev) {
-                    lastRev = json._rev;
-                    return true;
-                }
-                console.log(`DeusModelService: model '${type}' loaded, but not changed!`);
-                return false;
-            })
-            .map(json => this.processModelJson(json))
-            .share();
+    onDestroy(): void {
+        this.closeDatabases();
     }
 
     //Преобразует JSON модели в объект с информацией об обновлении (пока заглушки)
@@ -151,52 +177,58 @@ export class DeusModelService {
         return retObj;
     }
 
-    getEvents( pageSize: number = 100, maxTimestamp: number = 0 ): Observable<any> {
-        if (!this.charID) { return Observable.empty(); }
+    /**
+     * Отправка события персонажу.
+     *
+     * Если событие само не является Refresh'ем и установлен параметр refresh
+     * то отправить два события сразу: исходное + Refresh
+     *
+     * @param {string} name
+     * @param {string} evtData
+     * @param {boolean} refresh
+     * @returns {Observable<Response>}
+     *
+     * @memberof DeusModelService
+     */
+    sentEvent(name: string, evtData: string, refresh: boolean): Observable<Response> {;
+        //let h = new Headers({ 'Content-Type': 'application/json' });
 
-        let selector = {
-                selector: { characterId: { $eq: this.charID } },
-                sort: [
-                            {characterId :"desc"},
-                            {timestamp :"desc"}
-                      ],
-                limit: pageSize
-            };
+        let events: Array<DeusEvent> = [ new DeusEvent(this._config.characterID, name, evtData) ];
+        if (name != this.refreshEventName && refresh) { events.push(DeusEvent.getRefreshEvent(this._config.characterID)); }
 
-        if( maxTimestamp != 0 ){
-            selector.selector['timestamp'] = { $lt : maxTimestamp };
-        }
+        console.log("Send events: " + events.map(e => e.eventType).join(","));
 
-        let lastTimestamp: number = 0;
-        let lastSize: number = 0;
-
-        return Observable.timer(0, 30000)
-            .flatMap(x => this.eventsDB.find(selector))
-            .map((x:any) => x.docs )
-            .filter((docs, i) => {
-                if(lastTimestamp == 0){
-                    if(docs.length == 0) {
-                         return false;
-                    } else {
-                        lastTimestamp = docs[0].timestamp;
-                        return true;
-                    }
-                }else{
-                    if(docs.length == 0) {
-                        lastTimestamp = 0;
-                        return true;
-                    }else if(lastTimestamp != docs[0].timestamp){
-                        lastTimestamp = docs[0].timestamp;
-                        return true;
-                    }else{
-                        return false;
-                    }
-                }
-            })
-            .map( (x:Array<IDeusEvent>) => x.map( (e) => DeusEvent.fromEvent(e) ) )
-            .share();
-
+        return Observable.from(this.dbConnections["events"].bulkDocs(events));
     }
+
+    getLastEventsSource(pageSize: number = 100):Observable<Array<DeusEvent>> {
+        return this.refreshedConfigSource
+                        .flatMap( (c:DeusModelServiceConfig) => {
+                                return this.dbConnections["events"].find(
+                                             DeusModelService._eventsSelector(c.characterID,pageSize)
+                                );
+                        })
+                         .map((x:any) => x.docs )
+                        .distinctUntilChanged( DeusModelService._eventsCompare )
+                        .map( (x:Array<IDeusEvent>) => x.map( (e) => DeusEvent.fromEvent(e) ) );
+    }
+
+    private static _eventsSelector( id: string, psize: number ): any {
+        return  {
+            selector: { characterId: { $eq: id } },
+            sort: [
+                        {characterId :"desc"},
+                        {timestamp :"desc"}
+                    ],
+            limit: psize
+        };
+    }
+
+    private static _eventsCompare(m1: Array<IDeusEvent>, m2: Array<IDeusEvent>): boolean {
+        return (m1.length == 0 && m2.length == 0) ||
+               ( (m1.length == m2.length) && (m1[0].timestamp == m2[0].timestamp) );
+    }
+
 
     /**
      * Удаление всех событий для данного персонажа (ну или до 10К событий за раз)
@@ -206,14 +238,14 @@ export class DeusModelService {
     clearEvents(): void {
 
         let selector = {
-                selector:{ characterId: this.charID },
+                selector:{ characterId: this._config.characterID },
                 sort: [  {characterId :"desc"},
                          {timestamp :"desc"} ],
                 limit: 10000
             }
 
-        this.eventsDB.find( selector ).then( (result) => {
-            return this.eventsDB.bulkDocs(
+        this.dbConnections["events"].find( selector ).then( (result) => {
+            return this.dbConnections["events"].bulkDocs(
                         result.docs.map( (x) => {
                                                 return {
                                                         _id: x._id,

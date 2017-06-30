@@ -4,14 +4,13 @@
         <div class="card-block">
             <form class="form-inline justify-content-end">
                     <input name="CharID" class="form-control mx-3" type="text" id="charID" placeholder="Character ID or E-mail"
-                            [(ngModel)]="deusModelService.charID" (keyup.enter)="loadModel()"/>
+                            [(ngModel)]="charID" (keyup.enter)="loadModel()"/>
 
-                    <input name="Password" type="password" class="form-control mx-3" id="charPass" placeholder="Password"
-                        [(ngModel)]="deusModelService.charPass" (keyup.enter)="loadModel()"/>
+                    <!--<input name="Password" type="password" class="form-control mx-3" id="charPass" placeholder="Password"/>-->
 
                 <!--Кнопки загрузки данных модели-->
                     <button type="button" class="btn btn-primary px-6 ml-10 mr-3" style="height: 3rem;"
-                            [disabled]="deusModelService.charID==''"
+                            [disabled]="charID==''"
                             (click)="loadModel();" >
                             Load Model
                     </button>

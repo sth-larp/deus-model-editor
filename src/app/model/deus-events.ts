@@ -14,7 +14,9 @@ export class DeusEvent implements IDeusEvent{
                         public eventType: string,
                         public data: any = {},
                         public timestamp: number = Date.now(),
-                        public _id: string = "" ){}
+                        _id: string = null ){
+
+    }
 
     public static getRefreshEvent(characterId: string): DeusEvent{
         return new DeusEvent(characterId, REFRESH_EVENT_NAME);

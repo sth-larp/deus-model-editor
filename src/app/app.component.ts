@@ -23,6 +23,10 @@ export class AppComponent implements OnInit,OnDestroy {
     @ViewChild('viewModelView') viewModelView : JsonViewComponent;
     @ViewChild('eventsListView') eventsListView : EventsListComponent;
 
+//================================================================
+   //Данные формы
+    @Input() charID: string = "";
+//================================================================
 
     preloadedEventsList = PRELOAD_EVENTS.map( (x) => { return { label: x.label, value: x.type }; } );
 
@@ -60,54 +64,27 @@ export class AppComponent implements OnInit,OnDestroy {
 
     sentEvent(refresh: boolean): void {
         this.deusModelService.sentEvent(this.selectedEvent, this.eventData, refresh)
-            .subscribe( response => {
-                this.notifyService.success(`Successfully sent event: ${this.selectedEvent}`, "Event sent!")
-                this.connectViews();
+            .do( () => { this.notifyService.success(`Successfully sent event: ${this.selectedEvent}`, "Event sent!") } )
+            .delay(2000)
+            .subscribe( (response) => {
+                    this.deusModelService.config = this.deusModelService.config;
             },
-            error => {
+            (error) => {
                 this.notifyService.error(`Error while sending event: ${this.selectedEvent}\nError: ${error}`, "Event sent error!")
             });
     }
 
     loadModel(): void {
         this.connectViews();
+        this.deusModelService.characterID = this.charID;
     }
-
-    notifyWhenLoaded(count: number): number{
-        if(count < 2) { return count+1; }
-
-        this.notifyService.success("All model views reloaded!")
-        return 0;
-    }
-
-    private modCheckSubscription: Subscription = null;
 
     connectViews(): void{
-        let count = 0;
+        this.baseModelView.dataSource = this.deusModelService.getModelSource("base");
+        this.workModelView.dataSource = this.deusModelService.getModelSource("work");
+        this.viewModelView.dataSource = this.deusModelService.getModelSource("view");
 
-        if(this.modCheckSubscription && !this.modCheckSubscription.closed){
-            this.modCheckSubscription.unsubscribe();
-        }
-
-        let baseSource = this.deusModelService.getModel("base");
-        let workSource = this.deusModelService.getModel("work");
-        let viewSource = this.deusModelService.getModel("view");
-
-        this.baseModelView.dataSource = baseSource;
-        this.workModelView.dataSource = workSource;
-
-        this.modCheckSubscription = workSource.skip(1).take(1).delay(4000).subscribe(x => {
-                                        this.notifyService.warning("Model changed! Stop auto-reloading!")
-                                        this.disconnectViews();
-                                    });
-
-        this.viewModelView.dataSource = viewSource;
-
-        this.connectEventView();
-    }
-
-    connectEventView(): void{
-        this.eventsListView.dataSource = this.deusModelService.getEvents();
+        this.eventsListView.dataSource = this.deusModelService.getLastEventsSource(100);
     }
 
     private jsonViewReloadFlag:boolean[] = [false, false, false];
@@ -125,11 +102,6 @@ export class AppComponent implements OnInit,OnDestroy {
         this.baseModelView.dataSource = null;
         this.workModelView.dataSource = null;
         this.viewModelView.dataSource = null;
-
-        this.disconnectEventView();
-    }
-
-    disconnectEventView(){
         this.eventsListView.dataSource = null;
     }
 
@@ -142,7 +114,4 @@ export class AppComponent implements OnInit,OnDestroy {
         }
     }
 
-    testDBRequest(): void {
-        this.eventsListView.dataSource = this.deusModelService.getEvents();
-    }
 }

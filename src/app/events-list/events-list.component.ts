@@ -19,7 +19,6 @@ export class EventsListComponent implements OnInit {
 
     //DataSource
     private subscription: Subscription = null;
-    private _dataSource: Observable<any> = null;
 
     constructor(private deusModelService: DeusModelService,
                 private notifyService: NotificationService ) { }
@@ -34,28 +33,23 @@ export class EventsListComponent implements OnInit {
             console.log(`EventsListComponent : unsubscribed from data source`);
         }
 
-        this._dataSource = ds;
-
-        if(this._dataSource){
+        if(ds){
             //Подписаться на данные
             this._eventsList = []
-            this.subscription = this.dataSource.subscribe( (docs: DeusEvent[]) => {
-                                                    this._eventsList=docs;
+            this.subscription = ds.subscribe( (docs: DeusEvent[]) => {
+                                                this._eventsList=docs;
+                                                if(this._eventsList.length){
                                                     this.notifyService.success("Events data loaded!");
-                                                },
-                                                (error) => {
-                                                    this.notifyService.error( `EventsListComponent: error while loading events!\nError: ${error}`,
-                                                                              "Error with loading events data!" );
                                                 }
-                                            );
+                                            },
+                                            (error) => {
+                                                this.notifyService.error( `EventsListComponent: error while loading events!\nError: ${error}`,
+                                                                            "Error with loading events data!" );
+                                            }
+                                        );
 
             console.log(`EventsListComponent: subscribed to new data source`);
         }
     }
-
-    get dataSource():Observable<any>{
-        return this._dataSource;
-    }
-
 
 }
