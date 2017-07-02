@@ -1,0 +1,17 @@
+// @import "../../vendor/bootstrap4/css/bootstrap.css";
+
+#EventsTable .ngx-datatable {
+    border-collapse: collapse;
+    display: table;
+  }
+
+#EventsTable .datatable-body-row {
+    display:table-row;
+    border-collapse: collapse;
+}
+
+#EventsTable .ngx-datatable .datatable-body-cell {
+    border: 1px solid black;
+    display: table-cell;
+      border-collapse: collapse;
+}

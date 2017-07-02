@@ -46,9 +46,10 @@ export class JsonViewComponent implements OnInit {
                                                     this.onLoad.emit(null);
                                                 },
                                                 (error) => {
+                                                    this.textModelLines = [];
                                                     this.notifyService.error(`JsonViewComponent (${this.viewName}): error loading model!`)
                                                 }
-                                        );
+                                    );
 
             console.log(`JsonViewComponent (${this.viewName}): subscribed to new data source`);
         }

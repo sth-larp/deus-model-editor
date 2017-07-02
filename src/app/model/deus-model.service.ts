@@ -5,6 +5,7 @@ import { NotificationService } from '../notification.service'
 
 import * as PouchDB from 'pouchdb';
 import * as pouchDBFind from 'pouchdb-find';
+import * as clones from 'clones';
 
 import { REFRESH_EVENT_NAME } from "../data/preload-events"
 import { DeusEvent, IDeusEvent } from "./deus-events";
@@ -34,7 +35,7 @@ export class DeusModelService {
     // Новая модель конфигурации
     //==================================================================================================
 
-    private refreshTimeout:number = 10000;
+    private refreshTimeout:number = 30000;
 
     private defaultConfig: DeusModelServiceConfig = {
         couchDbUrl : "http://dev.alice.digital:5984/",
@@ -74,6 +75,11 @@ export class DeusModelService {
 
     public get characterID(): string{
         return this._config.characterID;
+    }
+
+    //Послать обновление всем цепочкам, зависящим от конфига
+    public refreshSources(): void{
+        this.configChanges.next( this.config );
     }
 
     //Источник событий с частотой refreshTimeout (содержимое - актуальный конфиг)
@@ -191,14 +197,15 @@ export class DeusModelService {
      * @memberof DeusModelService
      */
     sentEvent(name: string, evtData: string, refresh: boolean): Observable<Response> {;
-        //let h = new Headers({ 'Content-Type': 'application/json' });
+        let events: Array<IDeusEvent> = [ new DeusEvent(this._config.characterID, name, evtData) ];
 
-        let events: Array<DeusEvent> = [ new DeusEvent(this._config.characterID, name, evtData) ];
-        if (name != this.refreshEventName && refresh) { events.push(DeusEvent.getRefreshEvent(this._config.characterID)); }
+        if (name != this.refreshEventName && refresh) {
+            events.push( DeusEvent.getRefreshEvent(this._config.characterID) );
+        }
 
         console.log("Send events: " + events.map(e => e.eventType).join(","));
 
-        return Observable.from(this.dbConnections["events"].bulkDocs(events));
+        return Observable.from( this.dbConnections["events"].bulkDocs(events) );
     }
 
     getLastEventsSource(pageSize: number = 100):Observable<Array<DeusEvent>> {
@@ -209,7 +216,7 @@ export class DeusModelService {
                                 );
                         })
                          .map((x:any) => x.docs )
-                        .distinctUntilChanged( DeusModelService._eventsCompare )
+                        //.distinctUntilChanged( DeusModelService._eventsCompare )
                         .map( (x:Array<IDeusEvent>) => x.map( (e) => DeusEvent.fromEvent(e) ) );
     }
 
@@ -235,7 +242,8 @@ export class DeusModelService {
      *
      * @memberof DeusModelService
      */
-    clearEvents(): void {
+    clearEvents(): Observable<any> {
+        if(!this._config.characterID) { return Observable.empty(); }
 
         let selector = {
                 selector:{ characterId: this._config.characterID },
@@ -244,20 +252,32 @@ export class DeusModelService {
                 limit: 10000
             }
 
-        this.dbConnections["events"].find( selector ).then( (result) => {
-            return this.dbConnections["events"].bulkDocs(
-                        result.docs.map( (x) => {
-                                                return {
-                                                        _id: x._id,
-                                                        _rev: x._rev,
-                                                        _deleted : true,
-                                                        characterId : x.characterId,
-                                                        timestamp : x.timestamp,
-                                                        eventType : x.eventType,
-                                                        data : x.data
-                                                    };
-                                            } )
-                )
-        }).then((x) => { console.log(x); } )
+        return Observable.from( this.dbConnections["events"].find(selector) )
+                    .flatMap( (result:any) => {
+                            return this.dbConnections["events"].bulkDocs(
+                                result.docs.map( (x) =>  {
+                                                let x2 = clones(x);
+                                                x2._deleted = true
+                                                return x2;
+                                            }
+                                )
+                            );
+                    })
+                    .do( (x) => { console.log(x); } );
+    }
+
+    /**
+     * Удаление нескольких событий данного персонажа
+     *
+     * @memberof DeusModelService
+     */
+    deleteEvents( events: IDeusEvent[] ): Observable<any> {
+        if(!events.length) { return Observable.empty(); }
+
+        let arr: Observable<any>[] = [];
+
+        return Observable.from(events).flatMap( (event) => this.dbConnections["events"].get(event._id) )
+                                .flatMap( (doc:any) => this.dbConnections["events"].remove(doc) )
+                                .do((ret:any) => { console.log(`Deleted event id: ${ret.id}, status: ${ret.ok}`) });
     }
 }

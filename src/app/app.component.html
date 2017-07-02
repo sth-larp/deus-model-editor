@@ -14,13 +14,6 @@
                             (click)="loadModel();" >
                             Load Model
                     </button>
-                    <!--<button type="button" class="btn btn-sm"  style="height: 3rem;"
-                            [class.btn-success]="this.isAutoUpdate"
-                            [disabled]="deusModelService.charID==''"
-                            [class.btn-default]="!this.isAutoUpdate"
-                            (click)="autoUpdateToogle()" >
-                            Auto<br/>Reload
-                    </button>-->
             </form>
         </div>
     </div>
@@ -67,28 +60,21 @@
                     </div>
                     <div class="row">
                         <div class="col-md-12 text-right">
-                            <button type="button" class="btn btn-danger mr-3" style="height: 3rem;"
-                                 [disabled]="eventName=='' || deusModelService.charID==''"
+                            <button type="button" class="btn btn-primary mr-3" style="height: 3rem;"
+                                 [disabled]="eventName=='' || deusModelService.config.characterID==''"
                                  (click)="sentEvent(true)">
                                     Send &amp; Refresh
                             </button>
                             <button type="button" class="btn btn-secondary" style="height: 3rem;"
-                                [disabled]="eventName=='' || deusModelService.charID==''"
+                                [disabled]="eventName=='' || deusModelService.config.characterID==''"
                                 (click)="sentEvent(false)">
                                     Send Event
                             </button>
-                             <button type="button" class="btn btn-secondary" style="height: 3rem;"
-                                (click)="deusModelService.clearEvents()">
-                                    Clear events
-                            </button>
-                            <button type="button" class="btn btn-secondary" style="height: 3rem;"
-                                (click)="testDBRequest();">
-                                    DB Query
-                            </button>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-12 my-3">
+
+                    <div class="row my-5">
+                        <div class="col-12">
                             <dme-events-list  #eventsListView></dme-events-list>
                         </div>
                     </div>

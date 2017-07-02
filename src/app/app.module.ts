@@ -9,6 +9,8 @@ import {DropdownModule} from 'primeng/primeng';
 import {ToastModule, ToastOptions} from 'ng2-toastr/ng2-toastr';
 import { DataTableModule } from './data-table/index';
 
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+
 import { AppComponent } from './app.component';
 import { JsonViewComponent } from './json-view/json-view.component';
 import { LogWindowComponent } from './log-window/log-window.component';
@@ -33,7 +35,8 @@ import { EventsListComponent } from './events-list/events-list.component'
     BrowserAnimationsModule,
     DropdownModule,
     ToastModule.forRoot(),
-    DataTableModule
+    DataTableModule,
+    NgxDatatableModule
   ],
   providers: [
     {provide: ToastOptions, useClass: DmeToastOptions},
