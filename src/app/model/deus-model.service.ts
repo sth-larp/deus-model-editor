@@ -7,6 +7,8 @@ import * as PouchDB from 'pouchdb';
 import * as pouchDBFind from 'pouchdb-find';
 import * as clones from 'clones';
 
+import { defaultConfig }  from './../../../config';
+
 import { REFRESH_EVENT_NAME } from "../data/preload-events"
 import { DeusEvent, IDeusEvent } from "./deus-events";
 import { DeusModel } from './interfaces/model'
@@ -14,8 +16,8 @@ import { DeusModel } from './interfaces/model'
 export const dbAliases = ["base", "work", "view", "events"];
 
 export interface DeusModelServiceConfig{
-    couchDbUrl: string;
-    db: { [index: string]: string };
+    dbUrl: string;
+    dbNames: { [index: string]: string };
     characterID: string;
 }
 
@@ -36,17 +38,6 @@ export class DeusModelService {
     //==================================================================================================
 
     private refreshTimeout:number = 30000;
-
-    private defaultConfig: DeusModelServiceConfig = {
-        couchDbUrl : "http://dev.alice.digital:5984/",
-        db : {
-            work : "working-models-dev2",
-            base : "models-dev2",
-            view : "view-models-dev2",
-            events : "events-dev2"
-        },
-        characterID : ""
-    }
 
     //Текущая конфигурация
     private _config: DeusModelServiceConfig = null;
@@ -122,8 +113,8 @@ export class DeusModelService {
         this.closeDatabases();
 
         for(let db of dbAliases){
-            console.log(`Open database ${db}, url: ${this._config.couchDbUrl + this._config.db[db]}`);
-            this.dbConnections[db] =  new PouchDB(this._config.couchDbUrl + this._config.db[db]);
+            console.log(`Open database ${db}, url: ${this._config.dbUrl + this._config.dbNames[db]}`);
+            this.dbConnections[db] =  new PouchDB(this._config.dbUrl + this._config.dbNames[db]);
         }
     }
 
@@ -139,7 +130,11 @@ export class DeusModelService {
     onInit(): void {
         PouchDB.plugin(pouchDBFind);
 
-        this.config = this.defaultConfig;
+        let c:any = Object.assign({}, defaultConfig);
+        c.characterID = "";
+
+        this.config = c;
+
 
         this.refreshedConfigSource = this._getRefreshedConfigSource();
     }
