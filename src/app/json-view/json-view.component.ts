@@ -1,17 +1,9 @@
-import { Component, OnInit, Input, ViewChild } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
 
 import { DeusModelService } from '../model/deus-model.service';
-import { JsonLineShowComponent } from "../json-line-show/json-line-show.component"
-
-export class JsonTextLine{
-    lineNumber: number = 0;
-
-    constructor(public text: string,
-                public status:string = "none",
-                public subLines:JsonTextLine[] = null){}
-};
-
+import { JsonTextLine, PrepareViewData } from './prepare-view-data';
+import { NotificationService } from "../notification.service"
 
 
 @Component({
@@ -20,218 +12,140 @@ export class JsonTextLine{
     styleUrls: ['./json-view.component.css']
 })
 export class JsonViewComponent implements OnInit {
-//Constants
-    private indentString = "  ";
+//Данные для отладки
+@Input() viewName = "JsonViewComponent";
 
-//Data fields
-    public textModelLines: JsonTextLine[] = [];
 
 //DataSource
     private subscription: Subscription = null;
 
+/**
+ * Источник данных для показа (входной параметр компонента)
+ * (должен возвращать объект, подготовленный для показа
+ * в котором вместо значений __value и __status
+ *
+ * @type {Observable<any>}
+ * @memberof JsonViewComponent
+ */
+@Input()
+    set dataSource(ds: Observable<any>){
+        //Отключить старую подписку, если была
+        if(this.subscription){
+            this.subscription.unsubscribe();
+            this.subscription = null;
+            console.log(`JsonViewComponent (${this.viewName}): unsubscribed from data source`);
+        }
+
+        if(ds){
+            //Подписаться на данные
+            this.subscription = ds.map( (obj) => PrepareViewData.process(obj) )
+                                    .subscribe( (lines) => {
+                                                    this.textModelLines = lines;
+                                                    this.collapseAll();
+                                                    console.log(`JsonViewComponent (${this.viewName}): Model reloaded!`);
+                                                    this.onLoad.emit(null);
+                                                },
+                                                (error) => {
+                                                    this.textModelLines = [];
+                                                    this.notifyService.error(`JsonViewComponent (${this.viewName}): error loading model!`)
+                                                }
+                                    );
+
+            console.log(`JsonViewComponent (${this.viewName}): subscribed to new data source`);
+        }
+    }
+
+@Output() onLoad: EventEmitter<any> = new EventEmitter();
+
+get isConnected(): boolean {
+    return this.subscription && !this.subscription.closed;
+}
+
+//Набор строк для показа (получены после обработки)
+    public textModelLines: JsonTextLine[] = [];
+
 //Constructor
-    constructor(private modelService: DeusModelService) {}
+    constructor(private notifyService: NotificationService) {}
 
 //Members
     ngOnInit() {}
 
-    subscribeModel( type: string ): boolean{
-        this.unsubscribeModel();
-        this.subscription = this.modelService.getModel(type).subscribe( data => this.refreshModelLInes(data) );
-
-        return (this.subscription != null);
-    }
-
-    unsubscribeModel(): boolean{
-        if(this.subscription && !this.subscription.closed){
-            this.subscription.unsubscribe();
-            return true;
-        }
-        return false;
-    }
-
-    //Перезаливает список строк для отображения из источника
-    refreshModelLInes( obj : any ){
-        this.textModelLines = this.genObjectView(obj, 0);
-        this.setLineNumbers(this.textModelLines, 0);
-    }
-
-    //Проставляет номера строк после генерации строк для отображения
-    setLineNumbers( lines: JsonTextLine[], startNumber: number ): number {
-        let n = startNumber;
-
-        lines.forEach( (cur, index) => {
-                if(!cur.subLines){
-                    cur.lineNumber = n;
-                    n++;
-                }else{
-                    n += this.setLineNumbers(cur.subLines, n);
-                }
-            },this );
-
-        return n - startNumber;
-    }
-
-    //Возвращает тип объекта в JSONе (simple, numArray, array, object)
-    getModelObjectType(obj: any): string{
-        if(obj == null){
-            return "simple";
-        }else if(this.testSimpleJsonArray(obj)){
-            return "numArray";
-        }else if(Array.isArray(obj)){
-            return "array";
-        }else if(this.testSimpleJsonNode(obj)){
-            return "simple";
+    //Сворачивание или разворачивание блока
+    collapseButtonClick(line: number, levels: number = 1): void {
+        if(this.textModelLines[line].isTriggerCollapsed){
+            this.showBlock(line, levels);
         }else{
-            return "object";
-        }
-    }
-
-    //Проверка простой массив (только цифры)
-    testSimpleJsonArray(obj: any): boolean{
-        if(!Array.isArray(obj)) return false;
-
-        for(let i=0; i<obj.length; i++){
-            if(!this.testSimpleJsonNode(obj[i]) || (typeof obj[i].__value != "number")){
-                return false;
-            }
+            this.collapseBlock(line);
         }
 
-        return true;
+        this.textModelLines[line].isTriggerCollapsed = !this.textModelLines[line].isTriggerCollapsed;
     }
 
-    //Проверка на то, что это простое значение (не массив и не объект)
-    testSimpleJsonNode(obj: any): boolean {
-        if(obj.hasOwnProperty("__value") && obj.hasOwnProperty("__status") && (Object.keys(obj).length == 2)){
-            return true;
-        }
+    collapseBlock(line: number): void{
+        let flag: number = 1;
 
-        return false;
-    }
+        for(let i=line+1; i < this.textModelLines.length; i++ ){
+            if(flag == 0) { break; }
 
-    //Общая функция для получения строк для отображения
-    genModelValueView(obj: any, indent: number): JsonTextLine[]{
-        switch(this.getModelObjectType(obj)){
-            case "object":
-                return this.genObjectView(obj, indent);
+            this.textModelLines[i].isVisible = false;
 
-            case "array":
-                return this.genArrayView(obj, indent);
-
-            case "numArray":
-                return this.genSimpleArrayView(obj,indent);
-
-            case "simple":
-                return [ this.genSimpleView(obj, indent) ];
-        }
-    }
-
-    //Генерации строки отображения для простого массива
-    genSimpleArrayView(obj: any, indent: number): JsonTextLine[] {
-        if(obj.length == 0) { return [new JsonTextLine("[ ]")]; }
-
-        let retText: string = "[ ";
-        let status = "none";
-
-        for(let i=0; i<obj.length; i++){
-            let simpleVal = this.genSimpleView(obj[i],indent);
-            retText += simpleVal.text;
-
-            if(i != obj.length-1) {
-                 retText += ", ";
+            if(this.textModelLines[i].collapseTrigger) {
+                flag++;
+                this.textModelLines[i].isTriggerCollapsed=true;
             }
 
-            if(simpleVal.status != "none") { status = simpleVal.status; }
+            if(this.textModelLines[i].collapseFinish) { flag--; }
         }
-
-        retText += " ]";
-
-        return [new JsonTextLine(retText,status)]
     }
 
+    showBlock(line: number, levels: number = 1): void{
+        let flag: number = 1;
 
-    //Генерации строк отображения для обычного массива
-    genArrayView(obj: any, indent: number): JsonTextLine[] {
-        if(obj.length == 0) { return [new JsonTextLine("[ ]")]; }
+        for(let i=line+1; i < this.textModelLines.length; i++ ){
+            if(flag == 0) { break; }
 
-        let retText: JsonTextLine[] = [ new JsonTextLine("[") ]
-        let lineIndent = this.indentString.repeat(indent+1);
-
-        for(let i=0; i<obj.length; i++){
-             let nodeLines = this.genModelValueView(obj[i], indent+1);
-             nodeLines[0].text = lineIndent + nodeLines[0].text;
-
-             if(i != obj.length-1){
-                nodeLines[nodeLines.length-1].text = nodeLines[nodeLines.length-1].text + ","
+            if(flag <= levels ){
+                this.textModelLines[i].isVisible = true;
             }
 
-            if(nodeLines.length == 1){
-                retText.push(nodeLines[0]);
-            }else{
-                retText.push( new JsonTextLine("","none",nodeLines) );
+            if(this.textModelLines[i].collapseTrigger) {
+                flag++;
+
+                if( flag <= levels) {
+                    this.textModelLines[i].isTriggerCollapsed=false;
+                }
             }
+
+            if(this.textModelLines[i].collapseFinish) { flag--; }
         }
-
-        retText.push( new JsonTextLine(this.indentString.repeat(indent) + "]") );
-
-        return retText;
     }
 
-    //Генерации строк отображения для объекта
-    genObjectView(obj: any, indent: number): JsonTextLine[]{
-        if(Object.keys(obj).length == 0) { return [new JsonTextLine("{ }", obj.__status)] }
+    collapseAll(): void{
+        let flag: number = 1;
 
-        let retText: JsonTextLine[] = [ new JsonTextLine("{", obj.__status) ];
-        let lineIndent = this.indentString.repeat(indent+1);
-
-        let i = 0
-
-        for (let p in obj) {
-            if(p == "__status") {
-                i++;
-                continue;
+        for(let i=1; i < this.textModelLines.length; i++ ){
+            if(flag > 1){
+                this.textModelLines[i].isVisible = false;
             }
 
-            let nodeLines = this.genModelValueView(obj[p], indent+1);
-            nodeLines[0].text = lineIndent + `"${p}": ${nodeLines[0].text}`;
-
-            if(i != Object.keys(obj).length-1){
-                nodeLines[nodeLines.length-1].text = nodeLines[nodeLines.length-1].text + ","
+            if(this.textModelLines[i].collapseTrigger) {
+                flag++;
+                this.textModelLines[i].isTriggerCollapsed=true;
             }
 
-            if(nodeLines.length == 1){
-                retText.push(nodeLines[0]);
-            }else{
-                retText.push( new JsonTextLine("","none",nodeLines) );
-            }
-
-            i++;
-        }
-
-        retText.push( new JsonTextLine(this.indentString.repeat(indent) + "}", obj.__status) );
-
-        return retText;
+            if(this.textModelLines[i].collapseFinish) { flag--; }
+         }
     }
 
-    //Генерации строк отображения для простого значения (строка, цифра, boolean, null)
-    genSimpleView(obj: any, indent: number): JsonTextLine {
-        let ret: JsonTextLine = new JsonTextLine("");
+    showAll(): void{
+         let flag: number = 0;
 
-        if(obj == null){
-            debugger;
+        for(let i=0; i < this.textModelLines.length; i++ ){
+            this.textModelLines[i].isVisible = true;
+
+            if(this.textModelLines[i].collapseTrigger) {
+                this.textModelLines[i].isTriggerCollapsed=false;
+            }
         }
-
-        if(typeof obj.__value == "string"){
-            ret.text = `"${obj.__value}"`;
-        }else if(typeof obj.__value == "number" || typeof obj.__value == "boolean"){
-            ret.text = `${obj.__value}`;
-        }else if(obj.__value == null){
-            ret.text = "null";
-        }
-
-        ret.status = obj.__status;
-
-        return ret;
     }
-
 }

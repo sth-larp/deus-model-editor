@@ -1,0 +1,147 @@
+<!--
+     <data-table id="persons-grid"
+        [headerTitle]="'Model Events for '+ deusModelService.charID"
+        [items]="_eventsList"
+
+        [pagination]="true"
+        [indexColumn]="true"
+        [indexColumnHeader]="'#'"
+        [selectColumn]="false"
+        [multiSelect]="true"
+        [selectOnRowClick]="true"
+     >
+
+        <data-table-column
+            [property]="'timestamp'"
+            [header]="'Timestamp'"
+            [sortable]="false"
+            [resizable]="true">
+        </data-table-column>
+
+        <data-table-column
+            [property]="'eventType'"
+            [header]="'Event Name'"
+            [sortable]="false"
+            [resizable]="true">
+        </data-table-column>
+
+        <data-table-column
+            [property]="'dataAsString'"
+            [header]="'Event Data'"
+            [sortable]="false"
+            [resizable]="true">
+        </data-table-column>
+     </data-table>
+</div>-->
+<div class="d-flex flex-row justify-content-between mb-2">
+    <div class="h3" >Events List</div>
+    <div class="mx-5">
+        <ngb-pagination
+            [class.dmeHidden]="_eventsList.length <= pageSize"
+            [collectionSize]="_eventsList.length"
+            [pageSize]="pageSize"
+            [page]="page"
+            (pageChange)="onPageChange($event)"
+        ></ngb-pagination>
+    </div>
+</div>
+<div id="EventsTable" class="w-100">
+    <ngx-datatable #eventsTable
+        class="material"
+        [rows]="_eventsList"
+        [limit]="20"
+        [offset]="offset"
+        [columnMode]="'force'"
+        [selected]="selected"
+        [selectionType]="'multi'"
+    >
+        <ngx-datatable-row-detail [rowHeight]="200" #myDetailRow>
+            <ng-template let-row="row" ngx-datatable-row-detail-template>
+                <div class="p-2">
+                    <pre>{{row.json}}</pre>
+                </div>
+            </ng-template>
+        </ngx-datatable-row-detail>
+
+
+        <ngx-datatable-column
+            [width]="30"
+            [sortable]="false"
+            [canAutoResize]="false"
+            [draggable]="false"
+            [resizeable]="false"
+            [cellClass]="testClass">
+
+            <ng-template ngx-datatable-cell-template let-row="row">
+                    <i  class="fa fa-lg" style="opacity: 0.5;"
+                        [class.fa-caret-down]="!row.$$expanded"
+                        [class.fa-caret-up]="row.$$expanded"
+                        (click)="onRowExpand(row)">
+                    </i>
+            </ng-template>
+        </ngx-datatable-column>
+
+        <ngx-datatable-column
+            name="Timestamp"
+            prop="timestamp"
+            sortable="true"
+            canAutoResize="false"
+            width="120"
+            minWidth="100"
+            maxWidth="130">
+        </ngx-datatable-column>
+
+        <ngx-datatable-column
+            name="+/-"
+            prop="timeOffsetAsString"
+            sortable="true"
+            canAutoResize="false"
+            width="50"
+            minWidth="30"
+            maxWidth="80">
+        </ngx-datatable-column>
+        <ngx-datatable-column
+            name="Event Type"
+            prop="eventType"
+            sortable="true"
+            canAutoResize="true"
+            width="120"
+            minWidth="100"
+            maxWidth="150">
+        </ngx-datatable-column>
+         <ngx-datatable-column
+            name="Event Data"
+            prop="dataAsString"
+            sortable="false"
+            canAutoResize="true"
+            minWidth="120"
+            maxWidth="500"
+            >
+        </ngx-datatable-column>
+
+    </ngx-datatable>
+</div>
+<div class="d-flex justify-content-between mt-4">
+    <div d-flex>
+        <button type="button" class="btn btn-warning" style="height: 3rem;"
+            [disabled]="!selected.length"
+            (click)="onDeleteSelected($event)">
+                Delete Selected
+        </button>
+
+        <button type="button" class="btn btn-danger mx-3 " style="height: 3rem;"
+            [disabled]="!_eventsList.length"
+            (click)="onClearEvents($event)">
+                Clear events
+        </button>
+    </div>
+
+    <ngb-pagination
+        class="mx-5"
+        [class.dmeHidden]="_eventsList.length <= pageSize"
+        [collectionSize]="_eventsList.length"
+        [pageSize]="pageSize"
+        [page]="page"
+        (pageChange)="onPageChange($event)"
+    ></ngb-pagination>
+</div>

@@ -1,27 +1,90 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <title>Deus 2017 Model Editor</title>
-  <base href="/me/">
+    <meta charset="utf-8">
+    <title>Deus 2017 Model Editor</title>
+    <base href="/me/">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Vendor CSS -->
+    <link rel="stylesheet" href="vendor/bootstrap4/css/bootstrap.min.css">
+    <link rel="stylesheet" href="vendor/bootstrap4/css/bootstrap-grid.min.css">
+    <link rel="stylesheet" href="vendor/bootstrap4/css/bootstrap-reboot.min.css">
+    <link rel="stylesheet" href="vendor/themify-icons/themify-icons.css">
+    <link rel="stylesheet" href="vendor/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="vendor/animate.css/animate.min.css">
+    <link rel="stylesheet" href="vendor/jscrollpane/jquery.jscrollpane.css">
+    <link rel="stylesheet" href="vendor/waves/waves.min.css">
+    <link rel="stylesheet" href="vendor/select2/css/select2.min.css">
+    <link rel="stylesheet" href="vendor/material-design-iconic-font/css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" href="vendor/ionicons/css/ionicons.min.css">
+    <link rel="stylesheet" href="css/ng2-toastr.min.css">
 
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <!-- Neptune CSS -->
+    <link rel="stylesheet" href="vendor/Neptune/css/core.css">
 
 </head>
-<body>
-    <nav class="navbar navbar-toggleable-xl navbar-inverse bg-inverse">
-    <a class="navbar-brand h1" href="#">Deus 2017 Model Editor</a>
-    <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
-        <div class="navbar-nav">
-            <a class="nav-item active nav-link" href="#">Home  <span class="sr-only">(current)</span></a>
+
+<body class="fixed-header content-appear skin-1 material-design">
+    <div class="wrapper">
+
+        <!-- Preloader -->
+        <div class="preloader"></div>
+
+        <!-- Header -->
+        <div class="site-header">
+            <nav class="navbar navbar-light">
+                <div class="navbar-left">
+                    <a class="navbar-brand text-white" href="index.html">
+                        <span class="h3">Deus Model Editor</span>
+                    </a>
+                </div>
+                <div class="navbar-right navbar-toggleable-sm collapse" id="collapse-1">
+                </div>
+            </nav>
+        </div>
+
+        <!--TODO: fix margin-left: without sidebar-->
+        <div class="site-content" style="margin-left: 0;">
+            <!-- Content -->
+            <div class="content-area">
+                <app-root></app-root>
+            </div>
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row text-xs-center">
+                        <div class="col-sm-4 text-sm-left mb-0-5 mb-sm-0">
+                            2016 © Andy Krivtsov
+                        </div>
+                        <div class="col-sm-8 text-sm-right">
+                            <ul class="nav nav-inline l-h-2">
+                                <li class="nav-item"><a class="nav-link text-black" href="#">Help</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </footer>
         </div>
     </div>
-    </nav>
 
-    <div class="container-fluid">
-        <app-root></app-root>
-    </div>
+
+    <!-- Vendor JS -->
+    <script type="text/javascript" src="vendor/jquery/jquery-1.12.3.min.js"></script>
+    <script type="text/javascript" src="vendor/tether/js/tether.min.js"></script>
+    <script type="text/javascript" src="vendor/bootstrap4/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="vendor/detectmobilebrowser/detectmobilebrowser.js"></script>
+    <script type="text/javascript" src="vendor/jscrollpane/jquery.mousewheel.js"></script>
+    <script type="text/javascript" src="vendor/jscrollpane/mwheelIntent.js"></script>
+    <script type="text/javascript" src="vendor/jscrollpane/jquery.jscrollpane.min.js"></script>
+    <script type="text/javascript" src="vendor/waves/waves.min.js"></script>
+    <script type="text/javascript" src="vendor/select2/js/select2.min.js"></script>
+
+    <!-- Neptune JS -->
+    <script type="text/javascript" src="vendor/Neptune/js/app.js"></script>
+    <script type="text/javascript" src="vendor/Neptune/js/demo.js"></script>
 </body>
+
 </html>

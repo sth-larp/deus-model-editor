@@ -1,0 +1,115 @@
+@import url('https://fonts.googleapis.com/css?family=Droid+Sans+Mono');
+
+.form-control::placeholder {
+  color: #999;
+  opacity: 1;
+}
+
+.jsonLine, .dmeJsonIndent, .dmeJsonLineNumber, .dmeJsonCollapseIconBlock {
+    height: 20px;
+    vertical-align: middle;
+}
+
+.dmeJsonLineNumberBlock, .dmeJsonLineNumber {
+    width: 30px;
+}
+
+.dmeJsonCollapseIconBlock {
+    width: 25px;
+    text-align: center;
+}
+
+.dmeJsonLineNumber {
+    text-align: center;
+    color: lightgray;
+}
+
+.dmeJsonLinesSidebar:hover .dmeJsonCollapseIcon {
+    visibility: visible;
+}
+
+.dmeJsonCollapseIcon {
+    font-size: 10pt;
+    color: #9E9E9E;
+    visibility: hidden;
+}
+
+.material-design .jsonLine .btn {
+  box-shadow: none;
+}
+
+.material-design .card-header .btn {
+    box-shadow: none;
+}
+
+.dmeBntJsonCollapse {
+    padding: 0px;
+    height: 30px;
+    width: 30px;
+    color: gray;
+    border-color: gray;
+}
+
+.dmeTextReplaceBtn {
+    height: 12px;
+}
+
+.dmeHidden {
+    display: none;
+}
+
+.jsonCode, .dmeJsonLineNumber, .dmeJsonIndent, .dmeJsonField, .dmeJsonLBracket, .dmeJsonRBracket, .dmeJsonEmptyBrackets, .dmeJsonString, .dmeJsonNum, .dmeJsonBool, .dmeJsonNull {
+    font-family: 'Droid Sans Mono', 'monaco', monospace;
+    font-size: 10pt;
+}
+
+.line-numbers-color {
+    color: lightslategrey;
+}
+
+.dmeJsonField {
+    color: black;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonLBracket, .dmeJsonRBracket, .dmeJsonEmptyBrackets {
+    color: inherit;
+    font-weight: normal;
+}
+
+.dmeJsonString {
+    color: green;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonNum {
+    color:blue;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonBool {
+    color: brown;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonNull {
+    color: grey;
+    /*font-weight: bolder;*/
+}
+
+.dmeJsonIndent {
+    display: inline-block;
+    width: 20px;
+    border-left: 1px solid lightgray;
+    opacity: 0.7;
+}
+
+input:focus, textarea:focus {
+    box-shadow: 0px 0px 5px #1f89ce;
+}
+
+.reload-icon {
+    display: inline-block;
+    font-size: 15pt;
+    color: green;
+}
