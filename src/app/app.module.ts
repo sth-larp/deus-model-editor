@@ -7,7 +7,6 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {DropdownModule} from 'primeng/primeng';
 import {ToastModule, ToastOptions} from 'ng2-toastr/ng2-toastr';
-import { DataTableModule } from './data-table/index';
 
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 
@@ -35,7 +34,6 @@ import { EventsListComponent } from './events-list/events-list.component'
     BrowserAnimationsModule,
     DropdownModule,
     ToastModule.forRoot(),
-    DataTableModule,
     NgxDatatableModule
   ],
   providers: [
