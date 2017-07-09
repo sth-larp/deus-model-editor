@@ -37,7 +37,7 @@ export class DeusModelService {
     // Новая модель конфигурации
     //==================================================================================================
 
-    private refreshTimeout:number = 10000;
+    private refreshTimeout:number = 30000;
 
     //Текущая конфигурация
     private _config: DeusModelServiceConfig = null;
