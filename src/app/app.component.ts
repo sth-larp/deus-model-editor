@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ChangeDetectorRef, ViewContainerRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, ViewChild, ChangeDetectorRef, ViewContainerRef, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { JsonViewComponent } from './json-view/json-view.component'
 import { DeusModelService } from './model/deus-model.service'
 import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
@@ -9,15 +9,16 @@ import { NotificationService, DmeToastOptions  } from "./notification.service"
 import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from './data/preload-events'
 import { LogWindowComponent } from "./log-window/log-window.component"
 import { EventsListComponent } from "./events-list/events-list.component"
+import { SendEventsComponent } from './send-events/send-events.component'
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css'],
+    styleUrls: ['./app.component.scss'],
     providers: [ DeusModelService, NotificationService]
 })
 
-export class AppComponent implements OnInit,OnDestroy {
+export class AppComponent implements OnInit,OnDestroy  {
     @ViewChild('baseModelView') baseModelView : JsonViewComponent;
     @ViewChild('workModelView') workModelView : JsonViewComponent;
     @ViewChild('viewModelView') viewModelView : JsonViewComponent;
@@ -37,9 +38,8 @@ export class AppComponent implements OnInit,OnDestroy {
 
     subscription: any = null;
 
-    activeModelView: string = "base";
-
-    leftPaneType: string = "events";
+    activeModelView: string = "all";
+    activeSideView: string = "events";
 
     modelViews: any = {};
 
@@ -52,10 +52,13 @@ export class AppComponent implements OnInit,OnDestroy {
 
         this.notifyService.rootViewContainer = this.vcr;
 
-        this.activeModelView = "base";
         this.modelViews['base'] = this.baseModelView;
         this.modelViews['work'] = this.workModelView;
         this.modelViews['view'] = this.viewModelView;
+
+        setTimeout(() => {
+           this.activeModelView = "base";
+        },100);
     }
 
     ngOnDestroy(){
@@ -80,6 +83,7 @@ export class AppComponent implements OnInit,OnDestroy {
     }
 
     connectViews(): void{
+
         this.baseModelView.dataSource = this.deusModelService.getModelSource("base");
         this.workModelView.dataSource = this.deusModelService.getModelSource("work");
         this.viewModelView.dataSource = this.deusModelService.getModelSource("view");
@@ -114,4 +118,32 @@ export class AppComponent implements OnInit,OnDestroy {
         }
     }
 
+    onViewChangeButton(view: string){
+        this.activeModelView = view;
+        this.modelViews[view].refreshView();
+    }
+
+    //Отмена редактирования модели (перезагрузка редактора)
+    cancelUpdate(){
+         this.baseModelView.dataSource = this.deusModelService.getModelSource("base");
+         this.deusModelService.refreshSources();
+    }
+
+    udpateModel(){
+        Observable.from( [0] )
+            .flatMap( (value) => this.deusModelService.updateModel( JSON.parse(this.baseModelView.getText()) ) )
+            .do( () => {
+                        this.notifyService.success(`Model updated, refresh event sent. Waiting for reload!`, "Model update!");
+                        this.baseModelView.changeTracking = false;
+                        this.baseModelView.isChanged = false;
+                    } )
+            .delay(2000)
+            .subscribe( (response) => {
+                    this.connectViews();
+                    this.deusModelService.refreshSources();
+            },
+            (error) => {
+                this.notifyService.error(`Error while updating model.\nError: ${error}`, "Update model error!")
+            });
+    }
 }

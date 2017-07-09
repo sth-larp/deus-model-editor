@@ -1,0 +1,22 @@
+.flexFullHeight {
+    display: flex;
+    flex-grow: 1;
+}
+
+.rowDetailsBox {
+    padding: 0rem;
+    position:  relative;
+    height: 100%;
+    margin: 0px;
+}
+
+.rowPreDetail {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    bottom: 0px;
+    right: 0px;
+    overflow: auto;
+    padding: 0px;
+    margin: 0px;
+}

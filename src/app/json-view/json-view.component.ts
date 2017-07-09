@@ -5,24 +5,37 @@ import { DeusModelService } from '../model/deus-model.service';
 import { JsonTextLine, PrepareViewData } from './prepare-view-data';
 import { NotificationService } from "../notification.service"
 
+import { AceEditorComponent } from 'ng2-ace-editor';
+
+
 
 @Component({
     selector: 'dme-json-view',
     templateUrl: './json-view.component.html',
-    styleUrls: ['./json-view.component.css']
+    styleUrls: ['./json-view.component.css'],
 })
 export class JsonViewComponent implements OnInit {
+//Доступ к Ace Editor
+@ViewChild('editor') aceEditor : AceEditorComponent;
+
+
 //Данные для отладки
 @Input() viewName = "JsonViewComponent";
 
+//Read-only property
+@Input() readOnly: boolean = false;
+
+//Флаг того, что текст изменился изнутри редактора
+@Output() isChanged: boolean = false;
+
+//Нужно ли сейчас отслеживать изменени
+public changeTracking: boolean = false;
 
 //DataSource
-    private subscription: Subscription = null;
+private subscription: Subscription = null;
 
 /**
- * Источник данных для показа (входной параметр компонента)
- * (должен возвращать объект, подготовленный для показа
- * в котором вместо значений __value и __status
+ * Источник данных для показа (данные любой объект)
  *
  * @type {Observable<any>}
  * @memberof JsonViewComponent
@@ -38,15 +51,21 @@ export class JsonViewComponent implements OnInit {
 
         if(ds){
             //Подписаться на данные
-            this.subscription = ds.map( (obj) => PrepareViewData.process(obj) )
-                                    .subscribe( (lines) => {
-                                                    this.textModelLines = lines;
-                                                    this.collapseAll();
+            this.subscription = ds.map( (obj) => this.formatJson(obj) )
+                                    .subscribe( (text) => {
+                                                    this.changeTracking = false;
+                                                    this.isChanged = false;
+
+                                                    this.setText(text).then(() => {
+                                                            this.collapseAll();
+                                                            this.changeTracking = true;
+                                                        } );
+
                                                     console.log(`JsonViewComponent (${this.viewName}): Model reloaded!`);
                                                     this.onLoad.emit(null);
                                                 },
                                                 (error) => {
-                                                    this.textModelLines = [];
+                                                    this.setText("");
                                                     this.notifyService.error(`JsonViewComponent (${this.viewName}): error loading model!`)
                                                 }
                                     );
@@ -61,91 +80,66 @@ get isConnected(): boolean {
     return this.subscription && !this.subscription.closed;
 }
 
-//Набор строк для показа (получены после обработки)
-    public textModelLines: JsonTextLine[] = [];
+//Текст для редактора
+    public _text: string = "";
 
 //Constructor
     constructor(private notifyService: NotificationService) {}
 
 //Members
-    ngOnInit() {}
-
-    //Сворачивание или разворачивание блока
-    collapseButtonClick(line: number, levels: number = 1): void {
-        if(this.textModelLines[line].isTriggerCollapsed){
-            this.showBlock(line, levels);
-        }else{
-            this.collapseBlock(line);
-        }
-
-        this.textModelLines[line].isTriggerCollapsed = !this.textModelLines[line].isTriggerCollapsed;
+    ngOnInit() {
+        this.refreshView();
     }
 
-    collapseBlock(line: number): void{
-        let flag: number = 1;
-
-        for(let i=line+1; i < this.textModelLines.length; i++ ){
-            if(flag == 0) { break; }
-
-            this.textModelLines[i].isVisible = false;
-
-            if(this.textModelLines[i].collapseTrigger) {
-                flag++;
-                this.textModelLines[i].isTriggerCollapsed=true;
-            }
-
-            if(this.textModelLines[i].collapseFinish) { flag--; }
-        }
+    public refreshView(): Promise<any>{
+        return new Promise( resolve => {
+                    setTimeout( () => {
+                            this.aceEditor._editor.resize(true);
+                            resolve(true);
+                    }, 100 );
+                });
     }
 
-    showBlock(line: number, levels: number = 1): void{
-        let flag: number = 1;
+    public getText(): string{
+        return this._text;
+    }
 
-        for(let i=line+1; i < this.textModelLines.length; i++ ){
-            if(flag == 0) { break; }
+    public setText(t: string) : Promise<string> {
+        this._text  = t;
 
-            if(flag <= levels ){
-                this.textModelLines[i].isVisible = true;
-            }
-
-            if(this.textModelLines[i].collapseTrigger) {
-                flag++;
-
-                if( flag <= levels) {
-                    this.textModelLines[i].isTriggerCollapsed=false;
-                }
-            }
-
-            if(this.textModelLines[i].collapseFinish) { flag--; }
-        }
+        return new Promise( resolve => {
+                    setTimeout( () => {
+                            this.aceEditor._editor.navigateFileStart();
+                            resolve(t);
+                    }, 100 );
+                });
     }
 
     collapseAll(): void{
-        let flag: number = 1;
-
-        for(let i=1; i < this.textModelLines.length; i++ ){
-            if(flag > 1){
-                this.textModelLines[i].isVisible = false;
-            }
-
-            if(this.textModelLines[i].collapseTrigger) {
-                flag++;
-                this.textModelLines[i].isTriggerCollapsed=true;
-            }
-
-            if(this.textModelLines[i].collapseFinish) { flag--; }
-         }
+        this.aceEditor._editor.getSession().foldAll(1);
     }
 
     showAll(): void{
-         let flag: number = 0;
+        this.aceEditor._editor.getSession().unfold();
+    }
 
-        for(let i=0; i < this.textModelLines.length; i++ ){
-            this.textModelLines[i].isVisible = true;
+    formatJson(obj: any): string {
+        if(!obj) return "";
 
-            if(this.textModelLines[i].collapseTrigger) {
-                this.textModelLines[i].isTriggerCollapsed=false;
+        return JSON.stringify(obj, null, 4).replace(/\[\s*(?:\d,\s+)+?\d\s*\]/ig,
+                    (match)=>{  return match.replace(/\s+/ig,' '); }
+                );
+    }
+
+    onTextChange(e:any){
+        if(this.changeTracking) {
+            this.isChanged = true;
+
+            if(this.subscription){
+                this.dataSource = null;
             }
+
+            console.log("OnChange fired!");
         }
     }
 }

@@ -22,11 +22,18 @@
       "prefix": "app",
       "styles": [
         "styles.scss",
+        "../node_modules/bootstrap/dist/css/bootstrap.min.css",
+        "../node_modules/bootstrap/dist/css/bootstrap-grid.min.css",
+        "../node_modules/bootstrap/dist/css/bootstrap-reboot.min.css",
         "../node_modules/primeng/resources/primeng.min.css",
         "../node_modules/primeng/resources/themes/omega/theme.css"
       ],
       "scripts": [
-        "../node_modules/pouchdb/dist/pouchdb.min.js"
+        "../node_modules/pouchdb/dist/pouchdb.min.js",
+        "../node_modules/ace-builds/src-min/ace.js",
+        "../node_modules/ace-builds/src-min/mode-json.js",
+        "../node_modules/ace-builds/src-min/theme-twilight.js",
+        "../node_modules/ace-builds/src-min/theme-clouds.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {

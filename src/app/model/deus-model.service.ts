@@ -37,7 +37,7 @@ export class DeusModelService {
     // Новая модель конфигурации
     //==================================================================================================
 
-    private refreshTimeout:number = 30000;
+    private refreshTimeout:number = 10000;
 
     //Текущая конфигурация
     private _config: DeusModelServiceConfig = null;
@@ -92,7 +92,7 @@ export class DeusModelService {
                                 return this.dbConnections[db].get(c.characterID);
                         })
                         .distinctUntilChanged( DeusModelService._modelCompare )
-                        .map(model => this.processModelJson(model));
+                        //.map(model => this.processModelJson(model));
     }
 
     //Вспомогательные функции
@@ -143,39 +143,19 @@ export class DeusModelService {
         this.closeDatabases();
     }
 
-    //Преобразует JSON модели в объект с информацией об обновлении (пока заглушки)
-    private processModelJson(obj: any): any {
-        if (obj == null) { return null; }
+    /**
+     * Обновление модели персонажа. Если объет не сущестует, то создается новая модель
+     * Обновляется только Base-модель
+     */
 
-        let retObj: any = null;
-
-        if (!Array.isArray(obj)) {
-            retObj = {};
-            retObj["__status"] = "none";
-
-            /*if(Math.random() > 0.5){
-                retObj["__status"] = "mod";
-            }*/
-        } else {
-            retObj = [];
-        }
-
-        for (let p in obj) {
-            if (obj[p] == null) {
-                retObj[p] = { __value: null, __status: "none" }
-            } else if (typeof obj[p] == "object") {
-                retObj[p] = this.processModelJson(obj[p]);
-            } else if (typeof obj[p] == "string" || typeof obj[p] == "number" || typeof obj[p] == "boolean") {
-                retObj[p] = { __value: obj[p], __status: "none" }
-
-                //TODO test!!!
-                /*if(Math.random() > 0.5){
-                    retObj[p].__status = "mod";
-                }*/
-            }
-        }
-
-        return retObj;
+    updateModel(model: DeusModel): Observable<any>{
+         return Observable.from( this.dbConnections["base"].get(this.config.characterID) )
+            .flatMap( (obj:DeusModel) => {
+                    model._id = this.config.characterID;
+                    model._rev = obj._rev;
+                    return this.dbConnections["base"].put( model );
+            })
+            .flatMap( (response:any) => this.sentEvent() );
     }
 
     /**
@@ -191,7 +171,7 @@ export class DeusModelService {
      *
      * @memberof DeusModelService
      */
-    sentEvent(name: string, evtData: string, refresh: boolean): Observable<Response> {;
+    sentEvent(name: string = this.refreshEventName, evtData: string = "", refresh: boolean = false): Observable<Response> {;
         let events: Array<IDeusEvent> = [ new DeusEvent(this._config.characterID, name, evtData) ];
 
         if (name != this.refreshEventName && refresh) {

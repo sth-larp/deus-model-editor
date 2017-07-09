@@ -9,12 +9,14 @@ import {DropdownModule} from 'primeng/primeng';
 import {ToastModule, ToastOptions} from 'ng2-toastr/ng2-toastr';
 
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { AceEditorModule } from 'ng2-ace-editor';
 
 import { AppComponent } from './app.component';
 import { JsonViewComponent } from './json-view/json-view.component';
 import { LogWindowComponent } from './log-window/log-window.component';
 import { DmeToastOptions  } from "./notification.service";
-import { EventsListComponent } from './events-list/events-list.component'
+import { EventsListComponent } from './events-list/events-list.component';
+import { SendEventsComponent } from './send-events/send-events.component'
 
 
 @NgModule({
@@ -22,7 +24,8 @@ import { EventsListComponent } from './events-list/events-list.component'
     AppComponent,
     JsonViewComponent,
     LogWindowComponent,
-    EventsListComponent
+    EventsListComponent,
+    SendEventsComponent
   ],
   imports: [
     NgbModule.forRoot(),
@@ -34,7 +37,8 @@ import { EventsListComponent } from './events-list/events-list.component'
     BrowserAnimationsModule,
     DropdownModule,
     ToastModule.forRoot(),
-    NgxDatatableModule
+    NgxDatatableModule,
+    AceEditorModule
   ],
   providers: [
     {provide: ToastOptions, useClass: DmeToastOptions},

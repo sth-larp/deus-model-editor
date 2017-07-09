@@ -26,7 +26,33 @@ export class EventsListComponent implements OnInit {
         { prop: 'dataAsString', name: "Event Data", sortable: false, canAutoResize: true, minWidth: 120, maxWidth: 500 }
     ];
 
+    //Список событий для показа
+    private _eventsFilteredList: IDeusEvent[] = [];
+
+    //Нефильтрованный список
     private _eventsList: IDeusEvent[] = [];
+
+    @Input() set eventsList(l: IDeusEvent[]){
+        this._eventsList = l;
+        this._eventsFilteredList = this._filterEvetns(this._eventsList);
+    }
+
+    get eventsList(): IDeusEvent[]{
+        return this._eventsList;
+    }
+
+    //Нужно ли фильтровать Refresh
+    public _isShowRefresh:boolean = true;
+
+    @Input() set showRefresh(showRefresh: boolean){
+        this._isShowRefresh = showRefresh;
+        this._eventsFilteredList = this._filterEvetns(this._eventsList);
+    }
+
+    get showRefresh(): boolean{
+        return this._isShowRefresh;
+    }
+
 
     //pagination
     private page: number = 1;
@@ -68,11 +94,18 @@ export class EventsListComponent implements OnInit {
                                         }
                                     }
 
-                                     this._eventsList = events;
+                                     this.eventsList = events;
                                 });
 
             console.log(`EventsListComponent: subscribed to new data source`);
         }
+    }
+
+    _filterEvetns(events: IDeusEvent[]): IDeusEvent[]{
+        return events.filter((e:IDeusEvent)=>{
+                if(this._isShowRefresh) return true;
+                return (e.eventType != REFRESH_EVENT_NAME);
+        });
     }
 
 

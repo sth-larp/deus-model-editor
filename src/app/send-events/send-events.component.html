@@ -1,0 +1,32 @@
+<div class="d-flex flex-column m-0" [style.display]="leftPaneType=='events' ? 'block' : 'none'">
+        <div>
+            <div class="form-group col-md-12 p-0">
+                <label for="eventNameText">Event type</label>
+                <p-dropdown [options]="preloadedEventsList" [(ngModel)]="selectedEvent" [autoWidth]="false" [filter]="true" filterBy='label,value'
+                            [editable]="true"
+                            [dataKey]='type'
+                            (onChange)="onEventSelectChange($event.value)">
+                </p-dropdown>
+            </div>
+        </div>
+        <div>
+            <div class="col-md-12 form-group p-0">
+                <label for="eventData">Event Data</label>
+                <textarea [(ngModel)]="eventData" class="form-control" id="eventData" rows="3"></textarea>
+            </div>
+        </div>
+        <div>
+            <div class="col-md-12 text-right p-0">
+                <button type="button" class="btn btn-primary mr-3"
+                        [disabled]="selectedEvent=='' || deusModelService.config.characterID==''"
+                        (click)="sentEvent(true)">
+                        Send &amp; Refresh
+                </button>
+                <button type="button" class="btn btn-secondary"
+                    [disabled]="selectedEvent=='' || deusModelService.config.characterID==''"
+                    (click)="sentEvent(false)">
+                        Send Event
+                </button>
+            </div>
+        </div>
+</div>
