@@ -29,6 +29,7 @@
     "@swimlane/ngx-datatable": "^9.3.0",
     "@types/node": "^6.0.79",
     "angular-2-data-table-bootstrap4": "^0.1.6",
+    "bootstrap": "^4.0.0-alpha.6",
     "clones": "^1.1.0",
     "core-js": "^2.4.1",
     "format-duration": "^1.0.0",
