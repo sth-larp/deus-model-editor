@@ -1,0 +1,30 @@
+<div class="d-flex flex-row pageContent justify-content-center align-items-center">
+    <div class="card loginWindow" >
+        <div class="card-block">
+            <div class="form-group d-flex flex-row justify-content-center">
+                <h4 class="card-title">Login to Model Editor</h4>
+            </div>
+            <form (ngSubmit)="onLogin()">
+                 <div class="form-group">
+                    <label for="login-name">Username</label>
+                    <div>
+                        <input name="loginInput" class="form-control" type="text" id="login-name"  [(ngModel)]="authService.username">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div>
+                        <input name="passwordInput" class="form-control" type="password" placeholder="" id="password" [(ngModel)]="authService.password">
+                    </div>
+                </div>
+                <div class="form-group d-flex flex-row pt-3 justify-content-center">
+                    <button type="submit" class="btn btn-primary px-5"
+                         [disabled]="authService.username==''"
+                         >
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

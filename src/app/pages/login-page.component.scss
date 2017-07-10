@@ -1,0 +1,20 @@
+$loginBackgroundColor: darkgrey;
+$page-header-height:  60px;
+$page-footer-height:  20px;
+
+.loginWindow {
+    width: 300px;
+    height: 260px;
+}
+
+.pageContent {
+    width: 100% !important;
+    position:absolute;
+    top: $page-header-height;
+    bottom: $page-footer-height;
+    background-color: $loginBackgroundColor;
+}
+
+.card {
+    box-shadow: 2px 2px 5px #424242;
+}

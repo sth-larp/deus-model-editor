@@ -1,0 +1,110 @@
+$page-header-height:  60px;
+$page-footer-height:  20px;
+$backgroundColor: white;
+
+$delimetersColor: #BDBDBD;
+$sectionHeaderColor: #9E9E9E;
+
+$editorNavWrapperHeight: 52px;
+
+.topBarHeight {
+    height: 5rem;
+    max-height: 5rem;
+}
+
+.dme-card-header {
+    background-color: #BDBDBD;
+}
+
+.dme-card-header .nav-link:not(.active):hover {
+    color: #3e70c9;
+    border-color: transparent;
+}
+
+.bg-mod-lines {
+    background-color: #e0e0eb;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+.pageNav {
+    height: $page-header-height;
+}
+
+.pageContent {
+    width: 100% !important;
+    position:absolute;
+    top: $page-header-height;
+    bottom: $page-footer-height;
+    background-color: $backgroundColor;
+}
+
+.pageFooter{
+    position: absolute;
+    height: $page-footer-height;
+    bottom: 0px;
+    background-color: #616161;
+    width: 100% !important;
+    color: darkgrey;
+}
+
+.modelHeaderDelimeter {
+    height: 1px;
+    border: 0px;
+    background-color: $delimetersColor;
+    width: 100%;
+}
+
+.sectionHeader {
+    font-size: 1.4em;
+    color: $sectionHeaderColor;
+}
+
+.flexFullHeight, .jsonEditView {
+    display: flex;
+    flex-grow: 1;
+}
+
+.jsonEditView {
+    position:absolute;
+    top:0px;
+    left:0px;
+    bottom:0px;
+    right:0px;
+}
+
+.dmeEditorNavHeaderWrapper {
+    height: $editorNavWrapperHeight;
+    min-height: $editorNavWrapperHeight;
+}
+
+.dmeBntJsonCollapse, .dmeBntJsonCollapse:focus {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    color: #0275d8;
+    border-color: transparent;
+    background-color: transparent;
+    border-width: 1px;
+     box-shadow: 0 0 0 0;
+}
+
+.dmeBntJsonCollapse:hover {
+    border-width: 1px;
+    border-color: #0275d8;
+    background-color: transparent;
+}
+
+.dmeBntJsonCollapse:hover {
+    border-width: 1px;
+    border-color: #0275d8;
+    background-color: transparent;
+}
+
+.dmeBntJsonCollapse:active {
+    box-shadow: 0 0 0 2px rgba(2,117,216,.5);
+}
+

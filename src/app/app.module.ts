@@ -3,6 +3,8 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpModule, JsonpModule } from '@angular/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { RouterModule, Routes } from '@angular/router';
+
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {DropdownModule} from 'primeng/primeng';
@@ -14,10 +16,20 @@ import { AceEditorModule } from 'ng2-ace-editor';
 import { AppComponent } from './app.component';
 import { JsonViewComponent } from './json-view/json-view.component';
 import { LogWindowComponent } from './log-window/log-window.component';
-import { DmeToastOptions  } from "./notification.service";
+import { DmeToastOptions  } from "./services/notification.service";
 import { EventsListComponent } from './events-list/events-list.component';
 import { SendEventsComponent } from './send-events/send-events.component'
+import { ModelsPageComponent } from './pages/models-page.component';
+import { LoginPageComponent } from './pages/login-page.component';
+import { AuthGuard } from './services/auth-guard.service';
+import { AuthService } from './services/auth.service';
 
+
+const appRoutes: Routes = [
+    { path: 'models', component: ModelsPageComponent, canActivate: [AuthGuard] },
+    { path: 'login', component: LoginPageComponent },
+    { path: '',   redirectTo: '/models', pathMatch: 'full' },
+];
 
 @NgModule({
   declarations: [
@@ -25,7 +37,9 @@ import { SendEventsComponent } from './send-events/send-events.component'
     JsonViewComponent,
     LogWindowComponent,
     EventsListComponent,
-    SendEventsComponent
+    SendEventsComponent,
+    ModelsPageComponent,
+    LoginPageComponent
   ],
   imports: [
     NgbModule.forRoot(),
@@ -38,10 +52,16 @@ import { SendEventsComponent } from './send-events/send-events.component'
     DropdownModule,
     ToastModule.forRoot(),
     NgxDatatableModule,
-    AceEditorModule
+    AceEditorModule,
+    RouterModule.forRoot(
+      appRoutes,
+      { enableTracing: true } // <-- debugging purposes only
+    )
   ],
   providers: [
     {provide: ToastOptions, useClass: DmeToastOptions},
+    AuthGuard,
+    AuthService
   ],
   bootstrap: [AppComponent]
 })

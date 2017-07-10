@@ -3,7 +3,7 @@ import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
 
 import { DeusModelService } from '../model/deus-model.service';
 import { JsonTextLine, PrepareViewData } from './prepare-view-data';
-import { NotificationService } from "../notification.service"
+import { NotificationService } from "../services/notification.service"
 
 import { AceEditorComponent } from 'ng2-ace-editor';
 
@@ -88,6 +88,7 @@ get isConnected(): boolean {
 
 //Members
     ngOnInit() {
+        this.aceEditor._editor.getSession().on("changeFold", this.onFold.bind(this));
         this.refreshView();
     }
 
@@ -138,8 +139,14 @@ get isConnected(): boolean {
             if(this.subscription){
                 this.dataSource = null;
             }
+        }
+    }
 
-            console.log("OnChange fired!");
+    onFold(e: any){
+        if(this.changeTracking) {
+            if(this.subscription){
+                this.dataSource = null;
+            }
         }
     }
 }

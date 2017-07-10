@@ -1,169 +1,41 @@
 <div class="container-fluid h-100 px-0" style="overflow-y:hidden;">
 
-<!--Header line-->
-<nav class="navbar navbar-toggleable navbar-inverse bg-black fixed-top pageNav" >
-    <a class="navbar-brand" href="#">
-          <img src="assets/deus-logo.svg" width="35" height="35" class="d-inline-block align-middle" alt=""/>
-          {{title}}
-    </a>
-    <div class="navbar-nav mr-auto ml-5">
-        <a class= "nav-item nav-link active" href="#">
-            Models
+    <!--Header line-->
+    <nav class="navbar navbar-toggleable navbar-inverse bg-black fixed-top pageNav" >
+        <a class="navbar-brand" href="#">
+            <img src="assets/deus-logo.svg" width="35" height="35" class="d-inline-block align-middle" alt=""/>
+            {{title}}
         </a>
-        <a class="nav-item nav-link disabled" href="#">
-            Import
-        </a>
-    </div>
+        <div class="navbar-nav mr-auto ml-5" *ngIf="authService.isLoggedIn">
+            <a class= "nav-item nav-link active" routerLink="/models" routerLinkActive="active">
+                Models
+            </a>
+            <a class="nav-item nav-link disabled" href="#">
+                Import
+            </a>
+        </div>
 
-    <form class="form-inline justify-content-end">
-        <input name="CharID" class="form-control mx-3" type="text" id="charID" placeholder="Character ID or E-mail"
-                [(ngModel)]="charID" (keyup.enter)="loadModel()"/>
+        <form class="form-inline justify-content-end" *ngIf="authService.isLoggedIn">
+            <input name="CharID" class="form-control mx-3" type="text" id="charID" placeholder="Character ID or E-mail"
+                    [(ngModel)]="charID" (keyup.enter)="deusModelService.onLoadButton(charID)"/>
 
-        <!--Кнопки загрузки данных модели-->
-        <button type="button" class="btn btn-primary px-6 mr-3"
-                [disabled]="charID==''"
-                (click)="loadModel();" >
-                Load Model
-    </button>
-</form>
-</nav>
+            <!--Кнопки загрузки данных модели-->
+            <button type="button" class="btn btn-primary px-6 mr-3"
+                    [disabled]="charID==''"
+                    (click)="deusModelService.onLoadButton(charID)" >
+                    Load Model
+        </button>
+    </form>
+    </nav>
 
-<!--Основная страница (управление моделями)-->
-<div class="row pageContent m-0">
+    <!--Основная страница (управление моделями)-->
+    <router-outlet></router-outlet>
+    <!--<models-page #modelsPage ></models-page>-->
 
-    <!--Левый раздел страницы-->
-    <div class="col-6 h-100 pr-0" >
-
-        <!--Заголовок (меню выбора типа модели)-->
-        <div class="d-flex flex-column h-100">
-            <div class="d-flex flex-row p-2 pt-3 justify-content-between dmeEditorNavHeaderWrapper">
-                <ul class="nav nav-pills">
-                    <li class="nav-item">
-                        <a class="nav-link" [class.active]="activeModelView=='base'" (click)="onViewChangeButton('base');" href="#">
-                            Base Model
-                            <span *ngIf="modelViews.base.isConnected" class="ml-2" style="display:inline; font-size: 10pt;color: green;"
-                                [style.color] = "(activeModelView=='base') ? 'white' : 'green'">
-                            <i class="fa fa-refresh"></i></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link " [class.active]="activeModelView=='work'" (click)="onViewChangeButton('work');" href="#">
-                            Work Model
-                            <span *ngIf="modelViews.work.isConnected" class="ml-2" style="display:inline; font-size: 10pt;color: green;"
-                                [style.color] = "(activeModelView=='work') ? 'white' : 'green'">
-                                <i class="fa fa-refresh">
-                            </i></span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" [class.active]="activeModelView=='view'" (click)="onViewChangeButton('view');" href="#">
-                            View Model (Mobile)
-                            <span *ngIf="modelViews.view.isConnected" class="ml-2" style="display:inline; font-size: 10pt;color: green;"
-                                [style.color] = "(activeModelView=='view') ? 'white' : 'green'">
-                                <i class="fa fa-refresh"></i>
-                            </span>
-                        </a>
-                    </li>
-                </ul>
-
-                <!--Кнопки для сворачивания\разворачивания и обновления-->
-                <div class="align-self-center">
-                    <!--Кнопки обновлени модели-->
-                    <button type="button" class="btn btn-success px-6 mr-3"
-                                [disabled]="!baseModelView.isChanged"
-                                [style.visibility] = "baseModelView.isChanged ? 'visible' : 'hidden'"
-                                (click)="udpateModel();" >
-                                Update
-                    </button>
-
-                    <button type="button" class="btn btn-secondary px-6 mr-3"
-                                [disabled]="!baseModelView.isChanged"
-                                [style.visibility] = "baseModelView.isChanged ? 'visible' : 'hidden'"
-                                (click)="cancelUpdate();" >
-                                Cancel
-                    </button>
-
-                    <button type="button" class="btn btn-outline-primary mx-3 dmeBntJsonCollapse"
-                         (click)="modelViews[activeModelView].showAll()">
-                             <i class="ion-plus"></i>
-                    </button>
-
-                    <button type="button" class="btn btn-outline-primary dmeBntJsonCollapse"
-                         (click)="modelViews[activeModelView].collapseAll()">
-                            <i class="ion-minus"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="modelHeaderDelimeter"></div>
-
-
-            <!--Редакторы модели-->
-            <div class="flexFullHeight" style="position:relative;">
-                <dme-json-view #baseModelView
-                    class="jsonEditView"
-                    viewName="Base model view"
-                    (onLoad)="onJsonViewReload(0)"
-                    [style.display]="(['base','all'].includes(activeModelView)) ? 'flex' : 'none'"
-                >
-                </dme-json-view>
-                <dme-json-view #workModelView
-                    class="jsonEditView"
-                    readOnly="true"
-                    viewName="Work model view"
-                    (onLoad)="onJsonViewReload(1)"
-                    [style.display]="(['work','all'].includes(activeModelView)) ? 'flex' : 'none'"
-                >
-                </dme-json-view>
-                <dme-json-view #viewModelView
-                    class="jsonEditView"
-                    readOnly="true"
-                    viewName="ViewModel view"
-                    (onLoad)="onJsonViewReload(2)"
-                    [style.display]="(['view','all'].includes(activeModelView)) ? 'flex' : 'none'"
-                >
-                </dme-json-view>
-            </div>
+    <!--Footer-->
+    <div class="row pageFooter m-0 px-2">
+        <div class="col-12 p-0" >
+            v. 4.0
         </div>
     </div>
-<!--Завершение левого раздела страницы-->
-
-<!--Правый раздел страницы-->
-    <div class="col-6" >
-        <div class="d-flex flex-column h-100">
-
-        <!--Заголовок (меню выбора типа задачи)-->
-            <div class="d-flex flex-row p-2 pt-3 justify-content-between dmeEditorNavHeaderWrapper">
-                <ul class="nav nav-pills">
-                    <li class="nav-item">
-                        <a class="nav-link" [class.active]="activeSideView=='events'" (click)="activeSideView='events';" href="#">
-                            Events
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" [class.active]="activeSideView=='push'"  href="#">
-                            Push Messages
-                        </a>
-                    </li>
-                </ul>
-            </div>
-
-        <div class="modelHeaderDelimeter"></div>
-
-         <!--Посылка событий-->
-        <dme-send-events class="pt-3"></dme-send-events>
-
-         <div class="flexFullHeight">
-              <dme-events-list class="flexFullHeight pt-3"  #eventsListView></dme-events-list>
-         </div>
-    </div>
-</div>
-<!--Завершение правого раздела страницы-->
-
-</div>
-<!--Footer-->
-<div class="row pageFooter m-0 px-2">
-    <div class="col-12 p-0" >
-        v. 4.0
-    </div>
-</div>
 </div>

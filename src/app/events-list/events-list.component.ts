@@ -6,7 +6,7 @@ import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
 import { NgbPaginationConfig } from '@ng-bootstrap/ng-bootstrap'
 import { DatatableComponent  } from '@swimlane/ngx-datatable';
 
-import { NotificationService } from "../notification.service";
+import { NotificationService } from "../services/notification.service";
 import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from '../data/preload-events';
 
 

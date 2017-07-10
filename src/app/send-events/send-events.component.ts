@@ -3,7 +3,7 @@ import { DeusModelService } from '../model/deus-model.service'
 import { Observable, ConnectableObservable, Subscription } from 'rxjs/Rx';
 import { ToastOptions } from 'ng2-toastr/ng2-toastr';
 
-import { NotificationService, DmeToastOptions } from "../notification.service"
+import { NotificationService, DmeToastOptions } from "../services/notification.service"
 import { PRELOAD_EVENTS, REFRESH_EVENT_NAME } from '../data/preload-events'
 import { EventsListComponent } from "../events-list/events-list.component"
 

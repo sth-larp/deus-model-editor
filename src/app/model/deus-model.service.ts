@@ -1,7 +1,7 @@
 import { Injectable, Input } from '@angular/core';
-import { Observable, ConnectableObservable, BehaviorSubject } from 'rxjs/Rx';
+import { Observable, ConnectableObservable, BehaviorSubject, Subject } from 'rxjs/Rx';
 import { Headers, Response, Request, Http, RequestOptions, RequestOptionsArgs } from '@angular/http';
-import { NotificationService } from '../notification.service'
+import { NotificationService } from '../services/notification.service'
 
 import * as PouchDB from 'pouchdb';
 import * as pouchDBFind from 'pouchdb-find';
@@ -79,9 +79,21 @@ export class DeusModelService {
     //Текущие подключения в БД, изменяются, когда меняется конфиг
     private dbConnections : { [index: string]: PouchDB } = {};
 
+    //События от кнопки "Load model" для компонентов (кнопка в App-component, потребители в других)
+    private loadButtonSubject = new Subject<any>();
 
     //Конструктор
     constructor(private http: Http, private notifyService: NotificationService ) { }
+
+    //Методы для обработки кнопки Load Model (перезагрузки всего)
+    getLoadButtonStream(): Observable<any>{
+        return this.loadButtonSubject.asObservable();
+    }
+
+    onLoadButton(charID:string){
+        this.characterID = charID;
+        this.loadButtonSubject.next(this.characterID);
+    }
 
     //Метод для получения источника данных из БД
     //На данный момент - каждый источник это один запрос.
