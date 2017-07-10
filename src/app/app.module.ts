@@ -23,6 +23,7 @@ import { ModelsPageComponent } from './pages/models-page.component';
 import { LoginPageComponent } from './pages/login-page.component';
 import { AuthGuard } from './services/auth-guard.service';
 import { AuthService } from './services/auth.service';
+import { ConfigService } from './services/config.service';
 
 
 const appRoutes: Routes = [
@@ -60,6 +61,7 @@ const appRoutes: Routes = [
   ],
   providers: [
     {provide: ToastOptions, useClass: DmeToastOptions},
+    ConfigService,
     AuthGuard,
     AuthService
   ],

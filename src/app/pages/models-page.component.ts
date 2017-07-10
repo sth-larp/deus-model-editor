@@ -60,7 +60,7 @@ export class ModelsPageComponent implements OnInit,OnDestroy  {
             .do( () => { this.notifyService.success(`Successfully sent event: ${this.selectedEvent}`, "Event sent!") } )
             .delay(2000)
             .subscribe( (response) => {
-                    this.deusModelService.config = this.deusModelService.config;
+                    this.deusModelService.refreshSources();
             },
             (error) => {
                 this.notifyService.error(`Error while sending event: ${this.selectedEvent}\nError: ${error}`, "Event sent error!")

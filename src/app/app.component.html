@@ -2,7 +2,7 @@
 
     <!--Header line-->
     <nav class="navbar navbar-toggleable navbar-inverse bg-black fixed-top pageNav" >
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" routerLink="/models" routerLinkActive="active">
             <img src="assets/deus-logo.svg" width="35" height="35" class="d-inline-block align-middle" alt=""/>
             {{title}}
         </a>
@@ -24,8 +24,14 @@
                     [disabled]="charID==''"
                     (click)="deusModelService.onLoadButton(charID)" >
                     Load Model
-        </button>
-    </form>
+            </button>
+        </form>
+
+         <div class="navbar-nav logoutButton" *ngIf="authService.isLoggedIn">
+            <a class= "nav-item nav-link" (click)="onLogout()" >
+                Logout
+            </a>
+        </div>
     </nav>
 
     <!--Основная страница (управление моделями)-->
@@ -34,8 +40,11 @@
 
     <!--Footer-->
     <div class="row pageFooter m-0 px-2">
-        <div class="col-12 p-0" >
+        <div class="col-8 p-0" >
             v. 4.0
+        </div>
+        <div class="col-4 p-0 text-right" >
+            {{configService.config.dbUrl}}
         </div>
     </div>
 </div>

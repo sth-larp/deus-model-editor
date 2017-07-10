@@ -11,17 +11,27 @@ export class LoginPageComponent implements OnInit {
 
     constructor(private authService: AuthService, public router: Router) { }
 
+    private errorText:string = "";
+
     ngOnInit() {
-    }
-
-    onLogin() {
-        console.log("Login!");
-
-        this.authService.login().subscribe(() => {
-            if (this.authService.isLoggedIn) {
+        this.authService.checkLogin().subscribe( (isLoggedIn:boolean) => {
+            if(isLoggedIn){
                 let url = this.authService.redirectUrl ? this.authService.redirectUrl : '/models';
                 this.router.navigate([url]);
             }
         });
+    }
+
+    onLogin() {
+        this.authService.login().subscribe(() => {
+                if (this.authService.isLoggedIn) {
+                    let url = this.authService.redirectUrl ? this.authService.redirectUrl : '/models';
+                    this.router.navigate([url]);
+                }
+            },
+            (error) => {
+                 this.errorText = error.message;
+            }
+        )
     }
 }

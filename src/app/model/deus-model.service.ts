@@ -9,17 +9,12 @@ import * as clones from 'clones';
 
 import { defaultConfig }  from './../../../config';
 
-import { REFRESH_EVENT_NAME } from "../data/preload-events"
+import { REFRESH_EVENT_NAME } from "../data/preload-events";
 import { DeusEvent, IDeusEvent } from "./deus-events";
-import { DeusModel } from './interfaces/model'
+import { DeusModel } from './interfaces/model';
+import { DMEConfig, ConfigService } from '../services/config.service';
 
 export const dbAliases = ["base", "work", "view", "events"];
-
-export interface DeusModelServiceConfig{
-    dbUrl: string;
-    dbNames: { [index: string]: string };
-    characterID: string;
-}
 
 
 /**
@@ -40,50 +35,34 @@ export class DeusModelService {
     private refreshTimeout:number = 30000;
 
     //Текущая конфигурация
-    private _config: DeusModelServiceConfig = null;
+    private _characterID: string = "";
 
     //Источник событий при изменении
-    public configChanges: BehaviorSubject<DeusModelServiceConfig> = new BehaviorSubject(this.config);
-
-    //Properties связанные с конфигом (конфиг целиком и отдельно characterID)
-    public set config(c: DeusModelServiceConfig){
-        this._config = c;
-
-        console.log("Set config");
-        this.openDatabases();
-
-        this.configChanges.next( this.config )
-    }
-
-    public get config():DeusModelServiceConfig{
-        return Object.assign({}, this._config);
-    }
+    public charIdChanges: BehaviorSubject<string> = new BehaviorSubject(this.characterID);
 
     public set characterID(c: string){
-        this._config.characterID = c;
-        this.configChanges.next( this.config );
+        this._characterID = c;
+        this.charIdChanges.next( this._characterID );
     }
 
     public get characterID(): string{
-        return this._config.characterID;
+        return this._characterID;
     }
 
     //Послать обновление всем цепочкам, зависящим от конфига
     public refreshSources(): void{
-        this.configChanges.next( this.config );
+        this.charIdChanges.next( this.characterID );
     }
 
     //Источник событий с частотой refreshTimeout (содержимое - актуальный конфиг)
-    public refreshedConfigSource: Observable<any> = null;
-
-    //Текущие подключения в БД, изменяются, когда меняется конфиг
-    private dbConnections : { [index: string]: PouchDB } = {};
+    public refreshedConfigSource: Observable<any> = this._getRefreshedConfigSource();
 
     //События от кнопки "Load model" для компонентов (кнопка в App-component, потребители в других)
     private loadButtonSubject = new Subject<any>();
 
     //Конструктор
-    constructor(private http: Http, private notifyService: NotificationService ) { }
+    constructor( private notifyService: NotificationService,
+                 private configService: ConfigService ) { }
 
     //Методы для обработки кнопки Load Model (перезагрузки всего)
     getLoadButtonStream(): Observable<any>{
@@ -100,11 +79,10 @@ export class DeusModelService {
     //Источник передает обновление раз в refreshTimeout ms
     public getModelSource(db: string): Observable<DeusModel> {
          return this.refreshedConfigSource
-                        .flatMap( (c:DeusModelServiceConfig) => {
-                                return this.dbConnections[db].get(c.characterID);
+                        .flatMap( (c:DMEConfig) => {
+                                return this.configService.dbConnections[db].get(c.characterID);
                         })
                         .distinctUntilChanged( DeusModelService._modelCompare )
-                        //.map(model => this.processModelJson(model));
     }
 
     //Вспомогательные функции
@@ -112,48 +90,24 @@ export class DeusModelService {
         return (m1._rev == m2._rev)&&(m1._id == m2._id);
     }
 
-    private _getRefreshedConfigSource(): Observable<DeusModelServiceConfig> {
-        return this.configChanges.combineLatest(
+    private _getRefreshedConfigSource(): Observable<DMEConfig> {
+        return this.charIdChanges.combineLatest(
+                            this.configService.configChanges,
                             Observable.timer(0, this.refreshTimeout),
-                            (c:DeusModelServiceConfig, t:number) => { return c; }
+                            (charID:string, c:DMEConfig, t:number) => {
+                                let c2 = clones(c);
+                                c2.characterID = charID;
+                                return c2;
+                            }
                         )
-                        .filter((c:DeusModelServiceConfig) => c.characterID != "")
+                        .filter((c:DMEConfig) => c.characterID != "")
                         .share();
     }
 
-    private openDatabases(): void{
-        this.closeDatabases();
-
-        for(let db of dbAliases){
-            console.log(`Open database ${db}, url: ${this._config.dbUrl + this._config.dbNames[db]}`);
-            this.dbConnections[db] =  new PouchDB(this._config.dbUrl + this._config.dbNames[db]);
-        }
-    }
-
-    private closeDatabases(): void {
-        for(let db of dbAliases){
-            if(this.dbConnections[db]){
-                this.dbConnections[db].close();
-            }
-        }
-    }
-
     //У сервисов нет Lifetime Hooks поэтому эти будет вызывать головной компонент
-    onInit(): void {
-        PouchDB.plugin(pouchDBFind);
+    onInit(): void {}
 
-        let c:any = Object.assign({}, defaultConfig);
-        c.characterID = "";
-
-        this.config = c;
-
-
-        this.refreshedConfigSource = this._getRefreshedConfigSource();
-    }
-
-    onDestroy(): void {
-        this.closeDatabases();
-    }
+    onDestroy(): void {}
 
     /**
      * Обновление модели персонажа. Если объет не сущестует, то создается новая модель
@@ -161,11 +115,11 @@ export class DeusModelService {
      */
 
     updateModel(model: DeusModel): Observable<any>{
-         return Observable.from( this.dbConnections["base"].get(this.config.characterID) )
+         return Observable.from( this.configService.dbConnections["base"].get(this.characterID) )
             .flatMap( (obj:DeusModel) => {
-                    model._id = this.config.characterID;
+                    model._id = this.characterID;
                     model._rev = obj._rev;
-                    return this.dbConnections["base"].put( model );
+                    return this.configService.dbConnections["base"].put( model );
             })
             .flatMap( (response:any) => this.sentEvent() );
     }
@@ -184,21 +138,21 @@ export class DeusModelService {
      * @memberof DeusModelService
      */
     sentEvent(name: string = this.refreshEventName, evtData: string = "", refresh: boolean = false): Observable<Response> {;
-        let events: Array<IDeusEvent> = [ new DeusEvent(this._config.characterID, name, evtData) ];
+        let events: Array<IDeusEvent> = [ new DeusEvent(this.characterID, name, evtData) ];
 
         if (name != this.refreshEventName && refresh) {
-            events.push( DeusEvent.getRefreshEvent(this._config.characterID) );
+            events.push( DeusEvent.getRefreshEvent(this.characterID) );
         }
 
         console.log("Send events: " + events.map(e => e.eventType).join(","));
 
-        return Observable.from( this.dbConnections["events"].bulkDocs(events) );
+        return Observable.from( this.configService.dbConnections["events"].bulkDocs(events) );
     }
 
     getLastEventsSource(pageSize: number = 100):Observable<Array<DeusEvent>> {
         return this.refreshedConfigSource
-                        .flatMap( (c:DeusModelServiceConfig) => {
-                                return this.dbConnections["events"].find(
+                        .flatMap( (c:DMEConfig) => {
+                                return this.configService.dbConnections["events"].find(
                                              DeusModelService._eventsSelector(c.characterID,pageSize)
                                 );
                         })
@@ -230,18 +184,18 @@ export class DeusModelService {
      * @memberof DeusModelService
      */
     clearEvents(): Observable<any> {
-        if(!this._config.characterID) { return Observable.empty(); }
+        if(!this.characterID) { return Observable.empty(); }
 
         let selector = {
-                selector:{ characterId: this._config.characterID },
+                selector:{ characterId: this.characterID },
                 sort: [  {characterId :"desc"},
                          {timestamp :"desc"} ],
                 limit: 10000
             }
 
-        return Observable.from( this.dbConnections["events"].find(selector) )
+        return Observable.from( this.configService.dbConnections["events"].find(selector) )
                     .flatMap( (result:any) => {
-                            return this.dbConnections["events"].bulkDocs(
+                            return this.configService.dbConnections["events"].bulkDocs(
                                 result.docs.map( (x) =>  {
                                                 let x2 = clones(x);
                                                 x2._deleted = true
@@ -263,8 +217,8 @@ export class DeusModelService {
 
         let arr: Observable<any>[] = [];
 
-        return Observable.from(events).flatMap( (event) => this.dbConnections["events"].get(event._id) )
-                                .flatMap( (doc:any) => this.dbConnections["events"].remove(doc) )
+        return Observable.from(events).flatMap( (event) => this.configService.dbConnections["events"].get(event._id) )
+                                .flatMap( (doc:any) => this.configService.dbConnections["events"].remove(doc) )
                                 .do((ret:any) => { console.log(`Deleted event id: ${ret.id}, status: ${ret.ok}`) });
     }
 }

@@ -1,4 +1,5 @@
 import { Component, Input, ViewChild, ChangeDetectorRef, ViewContainerRef, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { JsonViewComponent } from './json-view/json-view.component'
 import { DeusModelService } from './model/deus-model.service'
 import { Observable, ConnectableObservable, Subscription, Subject } from 'rxjs/Rx';
@@ -12,6 +13,7 @@ import { EventsListComponent } from "./events-list/events-list.component";
 import { SendEventsComponent } from './send-events/send-events.component';
 import { ModelsPageComponent } from './pages/models-page.component';
 import { AuthService } from './services/auth.service'
+import { ConfigService, DMEConfig } from './services/config.service';
 
 @Component({
     selector: 'app-root',
@@ -32,14 +34,20 @@ export class AppComponent implements OnInit,OnDestroy  {
     constructor(private deusModelService: DeusModelService,
                 private notifyService: NotificationService,
                 private vcr: ViewContainerRef,
-                private authService: AuthService ) {}
+                private authService: AuthService,
+                private router: Router,
+                private configService: ConfigService
+                 ) {}
 
     ngOnInit() {
-        this.deusModelService.onInit();
         this.notifyService.rootViewContainer = this.vcr;
     }
 
-    ngOnDestroy(){
-        this.deusModelService.onDestroy();
+    ngOnDestroy(){ }
+
+    onLogout() {
+        this.authService.logout().subscribe( () => {
+            this.router.navigate(['/login']);
+        })
     }
 }

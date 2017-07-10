@@ -18,12 +18,12 @@
         <div>
             <div class="col-md-12 text-right p-0">
                 <button type="button" class="btn btn-primary mr-3"
-                        [disabled]="selectedEvent=='' || deusModelService.config.characterID==''"
+                        [disabled]="selectedEvent=='' || deusModelService.characterID==''"
                         (click)="sentEvent(true)">
                         Send &amp; Refresh
                 </button>
                 <button type="button" class="btn btn-secondary"
-                    [disabled]="selectedEvent=='' || deusModelService.config.characterID==''"
+                    [disabled]="selectedEvent=='' || deusModelService.characterID==''"
                     (click)="sentEvent(false)">
                         Send Event
                 </button>

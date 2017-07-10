@@ -4,7 +4,7 @@ $page-footer-height:  20px;
 
 .loginWindow {
     width: 300px;
-    height: 260px;
+    height: 280px;
 }
 
 .pageContent {
@@ -17,4 +17,8 @@ $page-footer-height:  20px;
 
 .card {
     box-shadow: 2px 2px 5px #424242;
+}
+
+.errorText {
+    color: red;
 }

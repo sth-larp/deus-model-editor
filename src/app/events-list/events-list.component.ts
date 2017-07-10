@@ -118,7 +118,7 @@ export class EventsListComponent implements OnInit {
 
     onClearEvents(event){
         this.deusModelService.clearEvents()
-            .do( () => { this.notifyService.warning(`Successfully clear events for user: ${this.deusModelService.config.characterID}`, "Events cleared!") } )
+            .do( () => { this.notifyService.warning(`Successfully clear events for user: ${this.deusModelService.characterID}`, "Events cleared!") } )
             .subscribe( (response) => {
                     this.deusModelService.refreshSources();
             },
@@ -135,7 +135,7 @@ export class EventsListComponent implements OnInit {
          this.deusModelService.deleteEvents(this.selected).subscribe(
                 (x) => {
                     this.notifyService.warning(
-                                    `Successfully deleted event ${x.id} for user: ${this.deusModelService.config.characterID}`, "Event deleted!");
+                                    `Successfully deleted event ${x.id} for user: ${this.deusModelService.characterID}`, "Event deleted!");
                 },
                 (error) => {
                     this.notifyService.error(`Error in deleting events: ${error}`, "Event deleting errors!")

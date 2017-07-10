@@ -1,9 +1,17 @@
 <div class="d-flex flex-row pageContent justify-content-center align-items-center">
     <div class="card loginWindow" >
         <div class="card-block">
-            <div class="form-group d-flex flex-row justify-content-center">
+            <div class="d-flex flex-row justify-content-center">
                 <h4 class="card-title">Login to Model Editor</h4>
             </div>
+            <div *ngIf="errorText" class="d-flex flex-row justify-content-center pb-3">
+                <span class="errorText">{{errorText}}</span>
+            </div>
+
+            <div *ngIf="!errorText" class="d-flex flex-row justify-content-center pb-3">
+                <span >Use CouchDB username and passwords</span>
+            </div>
+
             <form (ngSubmit)="onLogin()">
                  <div class="form-group">
                     <label for="login-name">Username</label>
@@ -19,7 +27,7 @@
                 </div>
                 <div class="form-group d-flex flex-row pt-3 justify-content-center">
                     <button type="submit" class="btn btn-primary px-5"
-                         [disabled]="authService.username==''"
+                         [disabled]="authService.username=='' || authService.password==''"
                          >
                         Login
                     </button>
