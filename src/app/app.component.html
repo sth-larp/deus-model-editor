@@ -41,10 +41,10 @@
     <!--Footer-->
     <div class="row pageFooter m-0 px-2">
         <div class="col-8 p-0" >
-            v. 4.0
+            v. 5.0
         </div>
         <div class="col-4 p-0 text-right" >
-            {{configService.config.dbUrl}}
+            <a [href]="configService.config.dbUrl + '_utils/'" target="_blank">{{configService.config.dbUrl}}</a>
         </div>
     </div>
 </div>

@@ -24,8 +24,17 @@ $editorNavWrapperHeight: 52px;
     bottom: 0px;
     background-color: #616161;
     width: 100% !important;
-    color: darkgrey;
+    color: white;
 }
+
+ .pageFooter a{
+     color: white;
+     text-decoration: none;
+ }
+
+ .pageFooter a:hover{
+     text-decoration: underline;
+ }
 
 .nav-item{
     font-size: 1.1rem;
