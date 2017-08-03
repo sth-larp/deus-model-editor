@@ -75,5 +75,25 @@ export const PRELOAD_EVENTS  = [
                 label: "character-resurect",
                 type: "character-resurect",
                 template: '{  }'
+            },
+            {
+                label: "start-illness",
+                type: "start-illness",
+                template: '{ "id": "<ilness-id>" }'
+            },
+            {
+                label: "delay-illness",
+                type: "delay-illness",
+                template: '{ "system": "<systemName>", "delay": "<xxxx-in-ms>" }'
+            },
+            {
+                label: "roll-illness",
+                type: "roll-illness",
+                template: '{ }'
+            },
+            {
+                label: "take-narco",
+                type: "roll-illness",
+                template: '{ "id": "<narco-id>" }'
             }
     ];

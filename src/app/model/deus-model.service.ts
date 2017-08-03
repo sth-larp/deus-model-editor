@@ -140,6 +140,8 @@ export class DeusModelService {
     sentEvent(name: string = this.refreshEventName, evtData: any = null, refresh: boolean = false): Observable<Response> {;
         let events: Array<IDeusEvent> = [ new DeusEvent(this.characterID, name, evtData) ];
 
+        events[0].timestamp = Date.now() + 1000;
+
         if (name != this.refreshEventName && refresh) {
             let event = DeusEvent.getRefreshEvent(this.characterID);
             event.timestamp = events[0].timestamp + 1;
