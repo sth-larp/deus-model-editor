@@ -24,12 +24,14 @@ import { LoginPageComponent } from './pages/login-page.component';
 import { AuthGuard } from './services/auth-guard.service';
 import { AuthService } from './services/auth.service';
 import { ConfigService } from './services/config.service';
+import { ImportPageComponent } from './pages/import-page.component';
 
 
 const appRoutes: Routes = [
     { path: 'models', component: ModelsPageComponent, canActivate: [AuthGuard] },
+    { path: 'import', component: ImportPageComponent, canActivate: [AuthGuard]  },
     { path: 'login', component: LoginPageComponent },
-    { path: '',   redirectTo: '/models', pathMatch: 'full' },
+    { path: '',   redirectTo: '/import', pathMatch: 'full' },
 ];
 
 @NgModule({
@@ -40,7 +42,8 @@ const appRoutes: Routes = [
     EventsListComponent,
     SendEventsComponent,
     ModelsPageComponent,
-    LoginPageComponent
+    LoginPageComponent,
+    ImportPageComponent
   ],
   imports: [
     NgbModule.forRoot(),

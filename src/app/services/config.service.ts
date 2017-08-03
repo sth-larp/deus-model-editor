@@ -24,7 +24,7 @@ export interface DMEConfig{
 export class ConfigService {
 
     //Текущие подключения в БД, изменяются, когда меняется конфиг
-    public dbConnections : { [index: string]: PouchDB } = {};
+    public dbConnections : { [index: string]: any } = {};
 
 
     //Текущая конфигурация
@@ -48,8 +48,8 @@ export class ConfigService {
     }
 
     constructor() {
-        PouchDB.plugin(pouchDBFind);
-        PouchDB.plugin(pouchdbAuth);
+        (PouchDB as any).plugin(pouchDBFind);
+        (PouchDB as any).plugin(pouchdbAuth);
 
         this.openDatabases();
      }

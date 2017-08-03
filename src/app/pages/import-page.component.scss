@@ -108,19 +108,7 @@ $editorNavWrapperHeight: 52px;
     box-shadow: 0 0 0 2px rgba(2,117,216,.5);
 }
 
-.nav-item .nav-link {
-    cursor: pointer;
-}
-
-.nav-item a.nav-link.disabled:hover {
-    cursor: not-allowed;
-    color: inherit;
-}
-
-.nav-item a.nav-link.active:hover {
-    color: white;
-}
-
-.nav-item a.nav-link:hover {
-    color: #0275d8;
+.disabledElem {
+    pointer-events: none;
+    cursor: not-allowed !important;
 }

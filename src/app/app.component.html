@@ -7,10 +7,10 @@
             {{title}}
         </a>
         <div class="navbar-nav mr-auto ml-5" *ngIf="authService.isLoggedIn">
-            <a class= "nav-item nav-link active" routerLink="/models" routerLinkActive="active">
+            <a class= "nav-item nav-link" routerLink="/models" routerLinkActive="active">
                 Models
             </a>
-            <a class="nav-item nav-link disabled" href="#">
+            <a class="nav-item nav-link" routerLink="/import" routerLinkActive="active">
                 Import
             </a>
         </div>

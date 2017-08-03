@@ -11,6 +11,7 @@ export interface IDeusEvent {
         dataAsString?: string,
         timeOffsetAsString?: string,
         json?: string
+
 };
 
 export class DeusEvent implements IDeusEvent{
@@ -32,7 +33,7 @@ export class DeusEvent implements IDeusEvent{
         return JSON.stringify(this.data);
     }
 
-    public static fromEvent(e: IDeusEvent): IDeusEvent{
+    public static fromEvent(e: IDeusEvent): DeusEvent{
         return (new DeusEvent(e.characterId, e.eventType, e.data, e.timestamp, e._id)).withTimeOffset();
     }
 
@@ -47,7 +48,7 @@ export class DeusEvent implements IDeusEvent{
             }, null, 4);
     }
 
-    public withTimeOffset(): IDeusEvent {
+    public withTimeOffset(): DeusEvent {
         let offset = this.timestamp - Date.now();
 
         if(Math.abs(offset) > 86400000){

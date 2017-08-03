@@ -36,7 +36,19 @@ export class SendEventsComponent implements OnInit {
     }
 
     sentEvent(refresh: boolean): void {
-        this.deusModelService.sentEvent(this.selectedEvent, this.eventData, refresh)
+
+        let data:any = null;
+        try{
+            data = JSON.parse(this.eventData);
+        }catch(err){
+            this.notifyService.error(`Error while sending event: ${this.selectedEvent}\nError: can't parse JSON data`, "Event sent error!");
+        }
+
+        console.log("Sent event");
+        console.log(data);
+
+
+        this.deusModelService.sentEvent(this.selectedEvent, data, refresh)
             .do( () => { this.notifyService.success(`Successfully sent event: ${this.selectedEvent}`, "Event sent!") } )
             .delay(2000)
             .subscribe( (response) => {

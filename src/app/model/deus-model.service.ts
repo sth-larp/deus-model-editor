@@ -79,7 +79,7 @@ export class DeusModelService {
     //Источник передает обновление раз в refreshTimeout ms
     public getModelSource(db: string): Observable<DeusModel> {
          return this.refreshedConfigSource
-                        .flatMap( (c:DMEConfig) => {
+                        .flatMap( (c:DMEConfig): Observable<DeusModel> => {
                                 return this.configService.dbConnections[db].get(c.characterID);
                         })
                         .distinctUntilChanged( DeusModelService._modelCompare )
@@ -137,11 +137,13 @@ export class DeusModelService {
      *
      * @memberof DeusModelService
      */
-    sentEvent(name: string = this.refreshEventName, evtData: string = "", refresh: boolean = false): Observable<Response> {;
+    sentEvent(name: string = this.refreshEventName, evtData: any = null, refresh: boolean = false): Observable<Response> {;
         let events: Array<IDeusEvent> = [ new DeusEvent(this.characterID, name, evtData) ];
 
         if (name != this.refreshEventName && refresh) {
-            events.push( DeusEvent.getRefreshEvent(this.characterID) );
+            let event = DeusEvent.getRefreshEvent(this.characterID);
+            event.timestamp = events[0].timestamp + 1;
+            events.push( event );
         }
 
         console.log("Send events: " + events.map(e => e.eventType).join(","));

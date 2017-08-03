@@ -105,12 +105,12 @@
             <div class="d-flex flex-row p-2 pt-3 justify-content-between dmeEditorNavHeaderWrapper">
                 <ul class="nav nav-pills">
                     <li class="nav-item">
-                        <a class="nav-link" [class.active]="activeSideView=='events'" (click)="activeSideView='events';" href="#">
+                        <a class="nav-link" [class.active]="activeSideView=='events'" (click)="activeSideView='events';">
                             Events
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link disabled" [class.active]="activeSideView=='push'"  href="#">
+                        <a class="nav-link disabled" [class.active]="activeSideView=='push'" >
                             Push Messages
                         </a>
                     </li>
@@ -119,11 +119,11 @@
 
         <div class="modelHeaderDelimeter"></div>
 
-         <!--Посылка событий-->
+        <!--Посылка событий-->
         <dme-send-events class="pt-3"></dme-send-events>
-            <div class="flexFullHeight">
-                <dme-events-list class="flexFullHeight pt-3"  #eventsListView></dme-events-list>
-            </div>
+        <div class="flexFullHeight">
+            <dme-events-list class="flexFullHeight pt-3"  #eventsListView></dme-events-list>
+        </div>
         </div>
     </div>
 <!--Завершение правого раздела страницы-->

@@ -1,0 +1,77 @@
+<!--Основная страница-->
+<div class="row pageContent m-0">
+    <!--Левый раздел страницы-->
+    <div class="col-6 h-100 pr-0" >
+
+        <div class="d-flex flex-column h-100">
+            <!--Заголовок -->
+            <div class="d-flex flex-row p-2 pt-3 justify-content-between dmeEditorNavHeaderWrapper">
+                 <form class="form-inline">
+                    <div class="form-group mr-3">
+                        <select name="filterSelecter" class="form-control" id="filterSelector"
+                            [(ngModel)]="filerSelectorValue"
+                            (change)="onFilterSelector($event)" >
+                                <option value="changed">Changed</option>
+                                <option value="all">All</option>
+                                <option value="after">Changed After</option>
+                        </select>
+                     </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <input class="form-control"
+                                    name="filterDateInput"
+                                    [(ngModel)]="filterDate"
+                                    ngbDatepicker #d="ngbDatepicker"
+                                    [disabled]="filerSelectorValue!='after'"
+                                    style="width: 8rem;"
+                                >
+                            <div class="input-group-addon" (click)="d.toggle()"
+                                [class.disabledElem] = "filerSelectorValue!='after'" >
+                                <div style="width: 1.2rem; height: 1rem; cursor: pointer;">
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mx-3">
+                        <input class="form-control mr-1"
+                                    name="timeHours"
+                                    [(ngModel)]="timeHours"
+                                    [disabled]="filerSelectorValue!='after'"
+                                    maxlength=2
+                                    style="width: 3rem;"
+                                >
+                        :
+                        <input class="form-control ml-1"
+                                    name="timeMinutes"
+                                    [(ngModel)]="timeMinutes"
+                                    [disabled]="filerSelectorValue!='after'"
+                                    maxlength=2
+                                    style="width: 3rem;"
+                                >
+                    </div>
+                </form>
+            </div>
+
+            <div class="modelHeaderDelimeter"></div>
+
+            <!--Список для импорта-->
+            <div class="flexFullHeight">
+                {{getTestString()}}
+            </div>
+        </div>
+    </div>
+
+
+<!--Правый раздел страницы-->
+    <div class="col-6 h-100" >
+        <div class="d-flex flex-column h-100">
+             <!--Заголовок (меню выбора типа задачи)-->
+            <div class="d-flex flex-row p-2 pt-3 justify-content-between dmeEditorNavHeaderWrapper">
+            </div>
+            <div class="modelHeaderDelimeter"></div>
+            <div class="flexFullHeight">
+            </div>
+        </div>
+    </div>
+</div>

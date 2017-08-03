@@ -55,17 +55,25 @@ export class ModelsPageComponent implements OnInit,OnDestroy  {
 
     ngOnDestroy(){}
 
-    sentEvent(refresh: boolean): void {
-        this.deusModelService.sentEvent(this.selectedEvent, this.eventData, refresh)
-            .do( () => { this.notifyService.success(`Successfully sent event: ${this.selectedEvent}`, "Event sent!") } )
-            .delay(2000)
-            .subscribe( (response) => {
-                    this.deusModelService.refreshSources();
-            },
-            (error) => {
-                this.notifyService.error(`Error while sending event: ${this.selectedEvent}\nError: ${error}`, "Event sent error!")
-            });
-    }
+    // sentEvent(refresh: boolean): void {
+
+    //     let data:any = null;
+    //     try{
+    //         data = JSON.parse(this.eventData);
+    //     }catch(err){
+    //         this.notifyService.error(`Error while sending event: ${this.selectedEvent}\nError: can't parse JSON data`, "Event sent error!");
+    //     }
+
+    //     this.deusModelService.sentEvent(this.selectedEvent, data, refresh)
+    //         .do( () => { this.notifyService.success(`Successfully sent event: ${this.selectedEvent}`, "Event sent!") } )
+    //         .delay(2000)
+    //         .subscribe( (response) => {
+    //                 this.deusModelService.refreshSources();
+    //         },
+    //         (error) => {
+    //             this.notifyService.error(`Error while sending event: ${this.selectedEvent}\nError: ${error}`, "Event sent error!")
+    //         });
+    // }
 
     connectViews(): void{
 
