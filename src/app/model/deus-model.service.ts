@@ -153,7 +153,7 @@ export class DeusModelService {
         return Observable.from( this.configService.dbConnections["events"].bulkDocs(events) );
     }
 
-    getLastEventsSource(pageSize: number = 100):Observable<Array<DeusEvent>> {
+    getLastEventsSource(pageSize: number = 2000):Observable<Array<DeusEvent>> {
         return this.refreshedConfigSource
                         .flatMap( (c:DMEConfig) => {
                                 return this.configService.dbConnections["events"].find(

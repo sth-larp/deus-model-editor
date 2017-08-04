@@ -109,13 +109,19 @@
                 </div>
             </form>
 
-        <ngb-pagination
-            class="mx-5"
-            [class.dmeHidden]="_eventsList.length <= pageSize"
-            [collectionSize]="_eventsList.length"
-            [pageSize]="pageSize"
-            [page]="page"
-            (pageChange)="onPageChange($event)"
-        ></ngb-pagination>
+            <ngb-pagination
+                max-size=""
+                class="mx-5"
+                [class.dmeHidden]="_eventsList.length <= pageSize"
+                [collectionSize]="_eventsList.length"
+                [pageSize]="pageSize"
+                [page]="page"
+                rotate="true"
+                (pageChange)="onPageChange($event)"
+                boundary-links="true"
+                direction-links="true"
+                force-ellipses="true"
+                maxSize="10"
+            ></ngb-pagination>
     </div>
 </div>

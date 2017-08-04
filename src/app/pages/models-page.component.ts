@@ -81,7 +81,7 @@ export class ModelsPageComponent implements OnInit,OnDestroy  {
         this.workModelView.dataSource = this.deusModelService.getModelSource("work");
         this.viewModelView.dataSource = this.deusModelService.getModelSource("view");
 
-        this.eventsListView.dataSource = this.deusModelService.getLastEventsSource(100);
+        this.eventsListView.dataSource = this.deusModelService.getLastEventsSource(2000);
     }
 
     private jsonViewReloadFlag:boolean[] = [false, false, false];
