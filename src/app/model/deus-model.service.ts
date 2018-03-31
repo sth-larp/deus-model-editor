@@ -10,7 +10,8 @@ PouchDB.plugin(PouchFind);
 
 import * as clones from 'clones';
 
-import { defaultConfig } from './../../../config';
+// TODO: Support passing via command flag
+import { defaultConfig } from './../../../config.docker';
 
 import { REFRESH_EVENT_NAME } from '../data/preload-events'
 import { DeusEvent, IDeusEvent } from './deus-events';
