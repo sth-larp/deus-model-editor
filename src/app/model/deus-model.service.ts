@@ -3,8 +3,11 @@ import { Observable, ConnectableObservable, BehaviorSubject } from 'rxjs/Rx';
 import { Headers, Response, Request, Http, RequestOptions, RequestOptionsArgs } from '@angular/http';
 import { NotificationService } from '../notification.service'
 
-import * as PouchDB from 'pouchdb';
-import * as pouchDBFind from 'pouchdb-find';
+import PouchDB from 'pouchdb';
+import PouchFind from 'pouchdb-find';
+PouchDB.plugin(PouchFind);
+
+
 import * as clones from 'clones';
 
 import { defaultConfig }  from './../../../config';
@@ -77,7 +80,7 @@ export class DeusModelService {
     public refreshedConfigSource: Observable<any> = null;
 
     //Текущие подключения в БД, изменяются, когда меняется конфиг
-    private dbConnections : { [index: string]: PouchDB } = {};
+    private dbConnections : { [index: string]: any } = {};
 
 
     //Конструктор
@@ -114,8 +117,14 @@ export class DeusModelService {
 
         for(let db of dbAliases){
             console.log(`Open database ${db}, url: ${this._config.dbUrl + this._config.dbNames[db]}`);
-            this.dbConnections[db] =  new PouchDB(this._config.dbUrl + this._config.dbNames[db]);
+            this.dbConnections[db] =  new PouchDB (this._config.dbUrl + this._config.dbNames[db]);
         }
+
+        this.dbConnections['events'].createIndex({
+            index: {
+              fields: ["characterId", "timestamp"]
+            }
+          });
     }
 
     private closeDatabases(): void {

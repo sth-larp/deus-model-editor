@@ -3,14 +3,16 @@ import { REFRESH_EVENT_NAME } from "../data/preload-events"
 import * as df from 'format-duration'
 
 export interface IDeusEvent {
-        _id?: string,
+        _id: string,
         characterId: string,
         timestamp : number,
         eventType : string,
         data : any,
-        dataAsString?: string,
-        timeOffsetAsString?: string,
-        json?: string
+        dataAsString: string,
+        timeOffsetAsString: string,
+        json: string
+
+        withTimeOffset(): IDeusEvent;
 };
 
 export class DeusEvent implements IDeusEvent{
