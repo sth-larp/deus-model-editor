@@ -10,7 +10,7 @@
       true,
       "check-space"
     ],
-    "curly": true,
+    "curly": false,
     "eofline": true,
     "forin": true,
     "import-blacklist": [
@@ -114,10 +114,7 @@
       "camelCase"
     ],
     "component-selector": [
-      true,
-      "element",
-      "app",
-      "kebab-case"
+      false
     ],
     "use-input-property-decorator": true,
     "use-output-property-decorator": true,

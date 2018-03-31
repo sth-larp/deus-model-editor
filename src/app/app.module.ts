@@ -13,7 +13,7 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { AppComponent } from './app.component';
 import { JsonViewComponent } from './json-view/json-view.component';
 import { LogWindowComponent } from './log-window/log-window.component';
-import { DmeToastOptions  } from "./notification.service";
+import { DmeToastOptions  } from './notification.service';
 import { EventsListComponent } from './events-list/events-list.component'
 
 

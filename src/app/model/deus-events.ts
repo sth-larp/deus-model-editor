@@ -1,13 +1,13 @@
-import { REFRESH_EVENT_NAME } from "../data/preload-events"
+import { REFRESH_EVENT_NAME } from '../data/preload-events'
 
 import * as df from 'format-duration'
 
 export interface IDeusEvent {
-        _id: string,
+        _id?: string,
         characterId: string,
-        timestamp : number,
-        eventType : string,
-        data : any,
+        timestamp: number,
+        eventType: string,
+        data: any,
         dataAsString: string,
         timeOffsetAsString: string,
         json: string
@@ -15,18 +15,10 @@ export interface IDeusEvent {
         withTimeOffset(): IDeusEvent;
 };
 
-export class DeusEvent implements IDeusEvent{
-    public timeOffsetAsString = "";
+export class DeusEvent implements IDeusEvent {
+    public timeOffsetAsString = '';
 
-    public constructor( public characterId: string,
-                        public eventType: string,
-                        public data: any = {},
-                        public timestamp: number = Date.now(),
-                        public _id: string = undefined ){
-
-    }
-
-    public static getRefreshEvent(characterId: string): IDeusEvent{
+    public static getRefreshEvent(characterId: string): IDeusEvent {
         return new DeusEvent(characterId, REFRESH_EVENT_NAME);
     }
 
@@ -34,7 +26,7 @@ export class DeusEvent implements IDeusEvent{
         return JSON.stringify(this.data);
     }
 
-    public static fromEvent(e: IDeusEvent): IDeusEvent{
+    public static fromEvent(e: IDeusEvent): IDeusEvent {
         return (new DeusEvent(e.characterId, e.eventType, e.data, e.timestamp, e._id)).withTimeOffset();
     }
 
@@ -49,16 +41,22 @@ export class DeusEvent implements IDeusEvent{
             }, null, 4);
     }
 
-    public withTimeOffset(): IDeusEvent {
-        let offset = this.timestamp - Date.now();
+    public constructor( public characterId: string,
+        public eventType: string,
+        public data: any = {},
+        public timestamp: number = Date.now(),
+        public _id?: string ) {}
 
-        if(Math.abs(offset) > 86400000){
+    public withTimeOffset(): IDeusEvent {
+        const offset = this.timestamp - Date.now();
+
+        if (Math.abs(offset) > 86400000) {
             this.timeOffsetAsString = ' > 24h';
-        }else{
-            if(offset > 0){
+        }else {
+            if (offset > 0) {
                 this.timeOffsetAsString = df(offset);
-            }else{
-                this.timeOffsetAsString = "-" + df(Math.abs(offset));
+            }else {
+                this.timeOffsetAsString = '-' + df(Math.abs(offset));
             }
         }
 

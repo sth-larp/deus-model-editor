@@ -1,24 +1,24 @@
-export const REFRESH_EVENT_NAME = "_RefreshModel";
+export const REFRESH_EVENT_NAME = '_RefreshModel';
 
 export const PRELOAD_EVENTS  = [
             {
-                label: "Refresh event",
+                label: 'Refresh event',
                 type: REFRESH_EVENT_NAME,
-                template: ""
+                template: ''
             },
             {
-                label: "usePill",
-                type: "usePill",
-                template: "{ id : guid }"
+                label: 'usePill',
+                type: 'usePill',
+                template: '{ id : guid }'
             },
             {
-                label: "Event 2",
-                type: "testEvt",
-                template: "{ }"
+                label: 'Event 2',
+                type: 'testEvt',
+                template: '{ }'
             },
             {
-                label: "Event 3",
-                type: "blah-blah",
-                template: "{}"
+                label: 'Event 3',
+                type: 'blah-blah',
+                template: '{}'
             }
     ];

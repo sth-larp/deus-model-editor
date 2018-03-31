@@ -8,7 +8,7 @@ export class DmeToastOptions extends ToastOptions {
   showCloseButton = true;
   toastLife = 10000;
   maxShown = 10;
-  positionClass = "toast-bottom-right";
+  positionClass = 'toast-bottom-right';
 }
 
 
@@ -22,33 +22,33 @@ export class NotificationService {
         this.toastr.setRootViewContainerRef(vcr);
     }
 
-    get rootViewContainer() : ViewContainerRef{
+    get rootViewContainer(): ViewContainerRef{
         return this._rootContainer;
     }
 
     constructor(public toastr: ToastsManager) { }
 
-    success(message: string, title: string = "Success!", component = ""){
+    success(message: string, title: string = 'Success!', component = '') {
         this.toastr.success(message, title);
-        this.log(message, "INFO", component);
+        this.log(message, 'INFO', component);
     }
 
-    error(message: string, title: string = "Error!", component = ""){
+    error(message: string, title: string = 'Error!', component = '') {
         this.toastr.error(message, title);
-        this.log(message, "ERROR", component);
+        this.log(message, 'ERROR', component);
     }
 
-    warning(message: string, title: string = "Warning!", component = ""){
+    warning(message: string, title: string = 'Warning!', component = '') {
         this.toastr.warning(message, title);
-        this.log(message, "WARNING", component);
+        this.log(message, 'WARNING', component);
     }
 
-    info(message: string, title: string = "Information!", component = ""){
+    info(message: string, title: string = 'Information!', component = '') {
         this.toastr.warning(message, title);
-        this.log(message, "INFO", component);
+        this.log(message, 'INFO', component);
     }
 
-    private log(message: string, title: string, component: string){
+    private log(message: string, title: string, component: string) {
         console.log(`${component}  ${title}: ${message}`);
     }
 }
